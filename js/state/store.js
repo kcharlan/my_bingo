@@ -1,8 +1,7 @@
+import { BOARD_CELL_COUNT, BOARD_SIZE, FREE_COORDINATE, createEmptyBoard } from "../logic/board.js";
+
 const STATE_STORAGE_KEY = "bingo/state/v1";
 const STATE_SCHEMA = "bingo.state.v1";
-const BOARD_SIZE = 5;
-const BOARD_CELL_COUNT = BOARD_SIZE * BOARD_SIZE;
-const FREE_COORDINATE = Object.freeze({ row: 2, col: 2 });
 
 /**
  * Creates a resilient storage layer that prefers localStorage but falls back
@@ -75,31 +74,10 @@ function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function createDefaultBoard() {
-  const cells = [];
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
-      const isFree = row === FREE_COORDINATE.row && col === FREE_COORDINATE.col;
-      cells.push({
-        row,
-        col,
-        text: isFree ? "Free" : "",
-        marked: isFree,
-      });
-    }
-  }
-
-  return {
-    size: BOARD_SIZE,
-    free: cloneState(FREE_COORDINATE),
-    cells,
-  };
-}
-
 function createDefaultState(nowFn) {
   return {
     schema: STATE_SCHEMA,
-    board: createDefaultBoard(),
+    board: createEmptyBoard(),
     bingo: { hasBingo: false },
     theme: { id: "default", version: "1.0.0" },
     wordList: { filename: "", hash: "" },

@@ -1,8 +1,13 @@
 import { store } from "../state/store.js";
-
-const BOARD_SIZE = 5;
-const FREE_COORDINATE = Object.freeze({ row: 2, col: 2 });
-const REQUIRED_NON_FREE_CELLS = BOARD_SIZE * BOARD_SIZE - 1;
+import {
+  BOARD_SIZE,
+  FREE_COORDINATE,
+  createBoardFromWords,
+  toggleCell,
+  clearMarks,
+  regenerateBoard,
+  needsBootstrap,
+} from "../logic/board.js";
 
 const PLACEHOLDER_WORDS = Object.freeze([
   "Innovation",
@@ -36,71 +41,61 @@ const indicatorElement = document.querySelector(".bingo-indicator");
 const indicatorHiddenCopy = indicatorElement?.querySelector(".visually-hidden");
 const liveRegion = document.getElementById("sr-live-region");
 const modalRoot = document.getElementById("modal-root");
+const toolbar = document.querySelector(".toolbar");
 
-function renderBoard(element) {
-  if (!element) {
-    return;
+let appState = null;
+let activeWordList = [...PLACEHOLDER_WORDS];
+let hasAttachedHandlers = false;
+
+function renderApp() {
+  if (boardElement && appState?.board) {
+    renderBoard(boardElement, appState.board);
   }
 
+  updateIndicator();
+}
+
+function renderBoard(element, board) {
   element.setAttribute("aria-rowcount", String(BOARD_SIZE));
   element.setAttribute("aria-colcount", String(BOARD_SIZE));
-  element.replaceChildren();
-
-  const words = preparePlaceholderWords();
-  let wordIndex = 0;
-
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
-      const isFree = row === FREE_COORDINATE.row && col === FREE_COORDINATE.col;
-      const text = isFree ? "Free" : words[wordIndex++];
-      const cell = createCell({ row, col, text, isFree });
-      element.appendChild(cell);
-    }
-  }
+  element.replaceChildren(...board.cells.map((cell) => createCell(cell)));
 }
 
-function preparePlaceholderWords() {
-  if (PLACEHOLDER_WORDS.length >= REQUIRED_NON_FREE_CELLS) {
-    return PLACEHOLDER_WORDS.slice(0, REQUIRED_NON_FREE_CELLS);
-  }
+function createCell(cell) {
+  const isFree = cell.row === FREE_COORDINATE.row && cell.col === FREE_COORDINATE.col;
 
-  const fallbackWords = [];
-  for (let index = 0; index < REQUIRED_NON_FREE_CELLS; index += 1) {
-    fallbackWords.push(`Cell ${index + 1}`);
-  }
-  return fallbackWords;
-}
-
-function createCell({ row, col, text, isFree }) {
-  const cell = document.createElement("button");
-  cell.type = "button";
-  cell.className = "board__cell";
-  cell.dataset.row = String(row);
-  cell.dataset.col = String(col);
-  cell.dataset.state = isFree ? "marked" : "unmarked";
-  cell.dataset.free = String(isFree);
-  cell.setAttribute("role", "gridcell");
-  cell.setAttribute("aria-rowindex", String(row + 1));
-  cell.setAttribute("aria-colindex", String(col + 1));
-  cell.setAttribute("aria-selected", isFree ? "true" : "false");
-  cell.title = isFree ? "Free space (always marked)" : text;
-  cell.textContent = text;
+  const node = document.createElement("button");
+  node.type = "button";
+  node.className = "board__cell";
+  node.dataset.row = String(cell.row);
+  node.dataset.col = String(cell.col);
+  node.dataset.state = cell.marked ? "marked" : "unmarked";
+  node.dataset.free = String(isFree);
+  node.setAttribute("role", "gridcell");
+  node.setAttribute("aria-rowindex", String(cell.row + 1));
+  node.setAttribute("aria-colindex", String(cell.col + 1));
+  node.setAttribute("aria-selected", cell.marked ? "true" : "false");
+  node.title = isFree ? "Free space (always marked)" : cell.text;
+  node.textContent = cell.text;
 
   if (isFree) {
-    cell.setAttribute("aria-disabled", "true");
+    node.setAttribute("aria-disabled", "true");
   }
 
-  return cell;
+  return node;
 }
 
-function primeIndicator(element) {
-  if (!element) {
+function updateIndicator() {
+  if (!indicatorElement || !appState?.bingo) {
     return;
   }
 
-  element.dataset.state = "inactive";
+  const { hasBingo = false } = appState.bingo;
+  indicatorElement.dataset.state = hasBingo ? "active" : "inactive";
   if (indicatorHiddenCopy) {
-    indicatorHiddenCopy.textContent = "Bingo indicator: no bingo yet.";
+    indicatorHiddenCopy.textContent = hasBingo
+      ? "Bingo indicator: at least one bingo is active."
+      : "Bingo indicator: no bingo yet.";
   }
 }
 
@@ -113,19 +108,157 @@ function primeLiveRegion(element) {
 }
 
 function init() {
-  hydrateStateStore();
   setupCorruptionHandler(modalRoot, liveRegion);
-  renderBoard(boardElement);
-  primeIndicator(indicatorElement);
+
+  const loadResult = hydrateStateStore();
+  appState = loadResult.state;
+
+  if (loadResult.status === "fresh" || needsBootstrap(appState.board)) {
+    bootstrapBoard();
+  }
+
+  renderApp();
   primeLiveRegion(liveRegion);
+  attachEventHandlers();
 }
 
 function hydrateStateStore() {
   try {
-    store.load();
+    return store.load();
   } catch (error) {
     console.error("[ui/view] Failed to hydrate initial state store.", error);
+    return { state: store.getDefaultState(), status: "reset" };
   }
+}
+
+function bootstrapBoard() {
+  try {
+    const board = createBoardFromWords(activeWordList);
+    updateState((draft) => {
+      draft.board = board;
+      draft.bingo = { hasBingo: false };
+      draft.wordList = {
+        filename: draft.wordList?.filename || "placeholder.txt",
+        hash: draft.wordList?.hash || "placeholder-list",
+      };
+    });
+    announce("A starter bingo board has been generated with placeholder content.");
+  } catch (error) {
+    console.error("[ui/view] Unable to bootstrap board.", error);
+  }
+}
+
+function updateState(mutator) {
+  if (!appState) {
+    appState = store.getDefaultState();
+  }
+
+  const draft = {
+    ...appState,
+    board: {
+      ...appState.board,
+      cells: appState.board?.cells?.map((cell) => ({ ...cell })) ?? [],
+    },
+    bingo: { ...(appState.bingo ?? { hasBingo: false }) },
+    wordList: { ...(appState.wordList ?? { filename: "", hash: "" }) },
+  };
+
+  mutator(draft);
+
+  try {
+    appState = store.save(draft);
+  } catch (error) {
+    console.error("[ui/view] Failed to persist state.", error);
+  }
+}
+
+function attachEventHandlers() {
+  if (hasAttachedHandlers) {
+    return;
+  }
+
+  if (boardElement) {
+    boardElement.addEventListener("click", handleBoardClick);
+  }
+
+  if (toolbar) {
+    toolbar.addEventListener("click", handleToolbarClick);
+  }
+
+  hasAttachedHandlers = true;
+}
+
+function handleBoardClick(event) {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const row = Number.parseInt(target.dataset.row ?? "", 10);
+  const col = Number.parseInt(target.dataset.col ?? "", 10);
+  const isFree = target.dataset.free === "true";
+
+  if (Number.isNaN(row) || Number.isNaN(col) || isFree) {
+    return;
+  }
+
+  updateState((draft) => {
+    draft.board = toggleCell(draft.board, row, col);
+    draft.bingo = { hasBingo: false };
+  });
+
+  renderApp();
+}
+
+function handleToolbarClick(event) {
+  const actionTarget = event.target;
+  if (!(actionTarget instanceof HTMLElement)) {
+    return;
+  }
+
+  const action = actionTarget.dataset.action;
+  if (!action) {
+    return;
+  }
+
+  if (action === "clear") {
+    updateState((draft) => {
+      draft.board = clearMarks(draft.board);
+      draft.bingo = { hasBingo: false };
+    });
+    renderApp();
+    announce("All marks cleared. Free space remains marked.");
+    return;
+  }
+
+  if (action === "regenerate") {
+    try {
+      const nextBoard = regenerateBoard(activeWordList);
+      updateState((draft) => {
+        draft.board = nextBoard;
+        draft.bingo = { hasBingo: false };
+      });
+      renderApp();
+      announce("Board regenerated with the current word list.");
+    } catch (error) {
+      console.error("[ui/view] Unable to regenerate board.", error);
+    }
+    return;
+  }
+
+  if (action === "load-list") {
+    announce("Loading a new list will be available once the file handling flow is implemented.");
+  }
+}
+
+function announce(message) {
+  if (!liveRegion) {
+    return;
+  }
+  liveRegion.textContent = "";
+  window.setTimeout(() => {
+    liveRegion.textContent = message;
+  }, 50);
 }
 
 function setupCorruptionHandler(modalContainer, liveRegionContainer) {
@@ -169,7 +302,7 @@ function setupCorruptionHandler(modalContainer, liveRegionContainer) {
     }
 
     modalContainer.appendChild(placeholderModal);
-    if (dismissButton) {
+    if (dismissButton instanceof HTMLElement) {
       dismissButton.focus();
     }
   });

@@ -102,15 +102,18 @@ accepts:
   - E3 modal surfaced
 ```
 
-### [ ] T04 — Board model & generation
+### [x] T04 — Board model & generation
 
 ```yaml
 id: T04
-status: todo
+status: done
 goal: logic/board.js for layout generation; Free invariants enforced.
 files:
   - /js/logic/board.js
 commands: []
+notes: Added board logic module (shuffle, toggle, regenerate, clear) and wired UI to persist state via store.
+artifacts:
+  - npm run lint
 accepts:
   - F6 toggle works (with stub)
   - F8 regenerate clears marks and keeps list
