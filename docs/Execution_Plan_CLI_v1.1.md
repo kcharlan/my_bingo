@@ -119,15 +119,17 @@ accepts:
   - F8 regenerate clears marks and keeps list
 ```
 
-### [ ] T05 — Bingo detection engine
+### [x] T05 — Bingo detection engine
 
 ```yaml
 id: T05
-status: todo
+status: done
 goal: logic/bingo.js with 12 masks; evaluate on change and load.
 files:
   - /js/logic/bingo.js
 commands: []
+artifacts:
+  - npm run lint
 accepts:
   - F13 line detection
   - F14 multiple Bingos

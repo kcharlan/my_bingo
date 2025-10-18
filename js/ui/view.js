@@ -8,6 +8,7 @@ import {
   regenerateBoard,
   needsBootstrap,
 } from "../logic/board.js";
+import { evaluateBoardForBingo } from "../logic/bingo.js";
 
 const PLACEHOLDER_WORDS = Object.freeze([
   "Innovation",
@@ -112,6 +113,7 @@ function init() {
 
   const loadResult = hydrateStateStore();
   appState = loadResult.state;
+  synchronizeBingoState();
 
   if (loadResult.status === "fresh" || needsBootstrap(appState.board)) {
     bootstrapBoard();
@@ -136,7 +138,7 @@ function bootstrapBoard() {
     const board = createBoardFromWords(activeWordList);
     updateState((draft) => {
       draft.board = board;
-      draft.bingo = { hasBingo: false };
+      applyBingoEvaluation(draft);
       draft.wordList = {
         filename: draft.wordList?.filename || "placeholder.txt",
         hash: draft.wordList?.hash || "placeholder-list",
@@ -204,7 +206,7 @@ function handleBoardClick(event) {
 
   updateState((draft) => {
     draft.board = toggleCell(draft.board, row, col);
-    draft.bingo = { hasBingo: false };
+    applyBingoEvaluation(draft);
   });
 
   renderApp();
@@ -224,7 +226,7 @@ function handleToolbarClick(event) {
   if (action === "clear") {
     updateState((draft) => {
       draft.board = clearMarks(draft.board);
-      draft.bingo = { hasBingo: false };
+      applyBingoEvaluation(draft);
     });
     renderApp();
     announce("All marks cleared. Free space remains marked.");
@@ -236,7 +238,7 @@ function handleToolbarClick(event) {
       const nextBoard = regenerateBoard(activeWordList);
       updateState((draft) => {
         draft.board = nextBoard;
-        draft.bingo = { hasBingo: false };
+        applyBingoEvaluation(draft);
       });
       renderApp();
       announce("Board regenerated with the current word list.");
@@ -259,6 +261,44 @@ function announce(message) {
   window.setTimeout(() => {
     liveRegion.textContent = message;
   }, 50);
+}
+
+function applyBingoEvaluation(draft) {
+  try {
+    draft.bingo = evaluateBoardForBingo(draft.board);
+  } catch (error) {
+    console.error("[ui/view] Failed to evaluate bingo state.", error);
+    draft.bingo = { hasBingo: false, lineCount: 0, lines: [] };
+  }
+}
+
+function synchronizeBingoState() {
+  if (!appState?.board) {
+    return;
+  }
+
+  let evaluation;
+  try {
+    evaluation = evaluateBoardForBingo(appState.board);
+  } catch (error) {
+    console.error("[ui/view] Unable to evaluate bingo state during initialization.", error);
+    return;
+  }
+
+  const currentLineCount = Array.isArray(appState.bingo?.lines) ? appState.bingo.lines.length : 0;
+
+  if (
+    !appState.bingo ||
+    appState.bingo.hasBingo !== evaluation.hasBingo ||
+    currentLineCount !== evaluation.lines.length
+  ) {
+    updateState((draft) => {
+      draft.bingo = evaluation;
+    });
+    return;
+  }
+
+  appState = { ...appState, bingo: evaluation };
 }
 
 function setupCorruptionHandler(modalContainer, liveRegionContainer) {
