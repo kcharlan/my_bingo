@@ -1,3 +1,5 @@
+import { store } from "../state/store.js";
+
 const BOARD_SIZE = 5;
 const FREE_COORDINATE = Object.freeze({ row: 2, col: 2 });
 const REQUIRED_NON_FREE_CELLS = BOARD_SIZE * BOARD_SIZE - 1;
@@ -33,6 +35,7 @@ const boardElement = document.getElementById("bingo-board");
 const indicatorElement = document.querySelector(".bingo-indicator");
 const indicatorHiddenCopy = indicatorElement?.querySelector(".visually-hidden");
 const liveRegion = document.getElementById("sr-live-region");
+const modalRoot = document.getElementById("modal-root");
 
 function renderBoard(element) {
   if (!element) {
@@ -110,9 +113,66 @@ function primeLiveRegion(element) {
 }
 
 function init() {
+  hydrateStateStore();
+  setupCorruptionHandler(modalRoot, liveRegion);
   renderBoard(boardElement);
   primeIndicator(indicatorElement);
   primeLiveRegion(liveRegion);
+}
+
+function hydrateStateStore() {
+  try {
+    store.load();
+  } catch (error) {
+    console.error("[ui/view] Failed to hydrate initial state store.", error);
+  }
+}
+
+function setupCorruptionHandler(modalContainer, liveRegionContainer) {
+  store.subscribe("corruption", (event) => {
+    if (liveRegionContainer) {
+      liveRegionContainer.textContent =
+        "Saved bingo data was reset due to corruption. The board has been restored to defaults.";
+    }
+
+    if (!modalContainer || modalContainer.querySelector("[data-modal='corruption-placeholder']")) {
+      return;
+    }
+
+    const placeholderModal = document.createElement("div");
+    placeholderModal.dataset.modal = "corruption-placeholder";
+    placeholderModal.className = "modal-placeholder";
+    placeholderModal.setAttribute("role", "alertdialog");
+    placeholderModal.setAttribute("aria-live", "assertive");
+    placeholderModal.setAttribute("aria-modal", "true");
+
+    placeholderModal.innerHTML = `
+      <div class="modal-placeholder__content">
+        <h2 class="modal-placeholder__title">Saved data reset</h2>
+        <p class="modal-placeholder__body">
+          The stored game state could not be read (${event?.reason ?? "unknown reason"}).
+          Default settings have been restored. This placeholder notice will be replaced
+          with the full modal experience in a later task.
+        </p>
+        <button type="button" class="modal-placeholder__dismiss">Dismiss</button>
+      </div>
+    `;
+
+    const dismissButton = placeholderModal.querySelector(".modal-placeholder__dismiss");
+    if (dismissButton) {
+      dismissButton.addEventListener("click", () => {
+        placeholderModal.remove();
+        if (liveRegionContainer) {
+          liveRegionContainer.textContent = "";
+        }
+      });
+    }
+
+    modalContainer.appendChild(placeholderModal);
+    if (dismissButton) {
+      dismissButton.focus();
+    }
+  });
 }
 
 if (document.readyState === "loading") {

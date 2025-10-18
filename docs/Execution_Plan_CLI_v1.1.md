@@ -79,17 +79,20 @@ accepts:
   - A7 focus indicators present
 ```
 
-### [ ] T03 — State store (persist/validate/reset)
+### [x] T03 — State store (persist/validate/reset)
 
 ```yaml
 id: T03
-status: todo
+status: done
 goal: state/store.js with load/save, schema validation, corruption reset modal hook.
 files:
   - /js/state/store.js
   - /js/state/__tests__/store.test.js (optional if test runner available)
 commands:
   - npm run test (optional)
+notes: Implemented resilient state store with schema validation, localStorage fallback, and corruption placeholder modal hook via UI. Lint suite run post-change.
+artifacts:
+  - npm run lint
 accepts:
   - F2 refresh persistence
   - F3 restart persistence
