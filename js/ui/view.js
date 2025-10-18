@@ -9,6 +9,7 @@ import {
   needsBootstrap,
 } from "../logic/board.js";
 import { evaluateBoardForBingo } from "../logic/bingo.js";
+import { createModalController } from "./modals.js";
 
 const PLACEHOLDER_WORDS = Object.freeze([
   "Innovation",
@@ -47,6 +48,7 @@ const toolbar = document.querySelector(".toolbar");
 let appState = null;
 let activeWordList = [...PLACEHOLDER_WORDS];
 let hasAttachedHandlers = false;
+let modalController = null;
 
 function renderApp() {
   if (boardElement && appState?.board) {
@@ -109,8 +111,8 @@ function primeLiveRegion(element) {
 }
 
 function init() {
-  setupCorruptionHandler(modalRoot, liveRegion);
-
+  modalController = createModalController({ container: modalRoot });
+  setupCorruptionHandler(modalController, liveRegion);
   const loadResult = hydrateStateStore();
   appState = loadResult.state;
   synchronizeBingoState();
@@ -301,50 +303,42 @@ function synchronizeBingoState() {
   appState = { ...appState, bingo: evaluation };
 }
 
-function setupCorruptionHandler(modalContainer, liveRegionContainer) {
+function setupCorruptionHandler(modals, liveRegionContainer) {
   store.subscribe("corruption", (event) => {
+    const reason = event?.reason ? String(event.reason) : "unknown reason";
+
     if (liveRegionContainer) {
       liveRegionContainer.textContent =
         "Saved bingo data was reset due to corruption. The board has been restored to defaults.";
     }
 
-    if (!modalContainer || modalContainer.querySelector("[data-modal='corruption-placeholder']")) {
+    if (!modals || typeof modals.open !== "function") {
+      if (typeof window !== "undefined" && typeof window.alert === "function") {
+        window.alert(
+          `Saved bingo data was reset due to corruption. (${reason}). Default settings have been restored.`
+        );
+      }
       return;
     }
 
-    const placeholderModal = document.createElement("div");
-    placeholderModal.dataset.modal = "corruption-placeholder";
-    placeholderModal.className = "modal-placeholder";
-    placeholderModal.setAttribute("role", "alertdialog");
-    placeholderModal.setAttribute("aria-live", "assertive");
-    placeholderModal.setAttribute("aria-modal", "true");
-
-    placeholderModal.innerHTML = `
-      <div class="modal-placeholder__content">
-        <h2 class="modal-placeholder__title">Saved data reset</h2>
-        <p class="modal-placeholder__body">
-          The stored game state could not be read (${event?.reason ?? "unknown reason"}).
-          Default settings have been restored. This placeholder notice will be replaced
-          with the full modal experience in a later task.
-        </p>
-        <button type="button" class="modal-placeholder__dismiss">Dismiss</button>
-      </div>
-    `;
-
-    const dismissButton = placeholderModal.querySelector(".modal-placeholder__dismiss");
-    if (dismissButton) {
-      dismissButton.addEventListener("click", () => {
-        placeholderModal.remove();
+    modals.open({
+      id: "modal-corruption-reset",
+      title: "Saved data reset",
+      body: `The stored game state could not be read (${reason}). Default settings have been restored.`,
+      primary: {
+        label: "Continue",
+        onSelect: () => {
+          if (liveRegionContainer) {
+            liveRegionContainer.textContent = "";
+          }
+        },
+      },
+      onClose: () => {
         if (liveRegionContainer) {
           liveRegionContainer.textContent = "";
         }
-      });
-    }
-
-    modalContainer.appendChild(placeholderModal);
-    if (dismissButton instanceof HTMLElement) {
-      dismissButton.focus();
-    }
+      },
+    });
   });
 }
 

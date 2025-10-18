@@ -137,15 +137,17 @@ accepts:
   - F16 on-load re-check works
 ```
 
-### [ ] T06 — Modal component & error UX
+### [x] T06 — Modal component & error UX
 
 ```yaml
 id: T06
-status: todo
+status: done
 goal: ui/modals.js with focus trap, Esc close, return focus; standard API.
 files:
   - /js/ui/modals.js
 commands: []
+artifacts:
+  - npm run lint
 accepts:
   - A2 focus trap/esc/return
   - E1/E2/E3/E5 error modals
