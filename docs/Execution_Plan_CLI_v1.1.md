@@ -59,17 +59,20 @@ accepts:
   - lint runs without fatal errors
 ```
 
-### [ ] T02 — UI shell + 5×5 grid markup
+### [x] T02 — UI shell + 5×5 grid markup
 
 ```yaml
 id: T02
-status: todo
+status: done
 goal: Static 5×5 board with Free center; toolbar; indicator; modal root; live region.
 files:
   - /css/app.css
   - /js/ui/view.js
   - update: bingo_app.html (include modules and containers)
 commands: []
+notes: Static shell rendered with placeholder data; ESLint unavailable during preflight.
+artifacts:
+  - Preflight: ESLint not installed; lint steps deferred.
 accepts:
   - F1 initial render
   - A6 visible focus

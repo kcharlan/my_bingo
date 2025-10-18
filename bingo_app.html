@@ -7,9 +7,68 @@
     <link rel="stylesheet" href="./css/app.css" />
   </head>
   <body>
-    <main>
-      <h1>Bingo App</h1>
-      <p>The interactive bingo board will appear here once the UI shell is implemented.</p>
+    <main id="bingo-app" class="app" aria-describedby="board-instructions">
+      <header class="app__header">
+        <div class="app__branding">
+          <h1 class="app__title">Bingo App</h1>
+          <p id="board-instructions" class="app__instructions">
+            Use the controls to load word lists, regenerate the board, or clear marks.
+          </p>
+        </div>
+        <div
+          class="bingo-indicator"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          data-state="inactive"
+        >
+          <span class="bingo-indicator__label" aria-hidden="true">BINGO</span>
+          <span class="visually-hidden">No bingo yet</span>
+        </div>
+      </header>
+
+      <section class="toolbar" aria-label="Board controls">
+        <button type="button" class="toolbar__button" data-action="load-list">Load New List</button>
+        <button type="button" class="toolbar__button" data-action="regenerate">
+          Regenerate Board
+        </button>
+        <button type="button" class="toolbar__button" data-action="clear">Clear All</button>
+        <label class="toolbar__theme">
+          <span class="toolbar__theme-label">Theme</span>
+          <select class="toolbar__select" data-action="theme-select" aria-label="Theme selection">
+            <option value="default">Default</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="board-wrapper" aria-labelledby="board-heading">
+        <h2 id="board-heading" class="visually-hidden">Bingo board</h2>
+        <div
+          id="bingo-board"
+          class="board"
+          role="grid"
+          aria-labelledby="board-heading"
+          aria-describedby="board-instructions"
+        ></div>
+      </section>
     </main>
+
+    <div
+      id="modal-root"
+      class="modal-root"
+      aria-live="assertive"
+      aria-atomic="true"
+      aria-relevant="additions text"
+    ></div>
+    <div
+      id="sr-live-region"
+      class="visually-hidden"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      aria-relevant="additions text"
+    ></div>
+
+    <script type="module" src="./js/ui/view.js"></script>
   </body>
 </html>
