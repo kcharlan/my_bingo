@@ -39,11 +39,11 @@
 > Each task includes: **Goal → Files to write/edit → Commands to run → Accepts (tests/criteria)**.  
 > On completion: check the box **and** update `execution_status.json` per §4.
 
-### [ ] T01 — Repo scaffold & tooling
+### [x] T01 — Repo scaffold & tooling
 
 ```yaml
 id: T01
-status: todo
+status: done
 goal: Create repo skeleton (/js, /css, /themes, /designer, /docs) plus ESLint/Prettier and npm scripts.
 files:
   - package.json
