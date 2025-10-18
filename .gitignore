@@ -1,0 +1,28 @@
+# --- Core ---
+node_modules/
+# add package-lock.json back in when project stabilizes or is finished
+package-lock.json
+
+# --- Build / Temp ---
+dist/
+build/
+.cache/
+coverage/
+*.log
+*.tmp
+
+# --- System / Editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- Local scripts / Env ---
+.env
+.env.*
+*.local
+
+# --- Generated docs or test artifacts ---
+docs/execution_status.json
+test-results/
+playwright-report/
