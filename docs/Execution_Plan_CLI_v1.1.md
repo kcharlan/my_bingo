@@ -153,11 +153,11 @@ accepts:
   - E1/E2/E3/E5 error modals
 ```
 
-### [ ] T07 — Accessibility wiring
+### [x] T07 — Accessibility wiring
 
 ```yaml
 id: T07
-status: todo
+status: done
 goal: ui/a11y.js with roles, aria-selected sync, live region announcements.
 files:
   - /js/ui/a11y.js
@@ -166,13 +166,15 @@ accepts:
   - A1 keyboard nav across grid
   - A3 proper ARIA roles/states
   - A4 live announcements
+artifacts:
+  - npx eslint js/ui/view.js js/ui/a11y.js
 ```
 
-### [ ] T08 — Theme loader (hot re-theme)
+### [x] T08 — Theme loader (hot re-theme)
 
 ```yaml
 id: T08
-status: todo
+status: done
 goal: theme/loader.js reads theme.json; validate; inject CSS; revert on failure.
 files:
   - /js/theme/loader.js
@@ -182,13 +184,15 @@ accepts:
   - T2 hot re-theme without state loss
   - T3/T4 fallback on missing/invalid theme
   - T5 refuse remote URLs
+artifacts:
+  - npx eslint js/ui/view.js js/theme/loader.js
 ```
 
-### [ ] T09 — Word list loader & strict validation
+### [x] T09 — Word list loader & strict validation
 
 ```yaml
 id: T09
-status: todo
+status: done
 goal: io/wordlist.js with UTF‑8 check, trim, case-insensitive dedupe, emoji/control rejection.
 files:
   - /js/io/wordlist.js
@@ -203,6 +207,8 @@ accepts:
   - F12 emoji/control rejected (modal)
   - E1 invalid encoding handled
   - S3 JSON/list sanitization applied
+artifacts:
+  - npx eslint js/io/wordlist.js
 ```
 
 ### [ ] T10 — Toolbar actions wiring

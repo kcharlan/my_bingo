@@ -10,6 +10,8 @@ import {
 } from "../logic/board.js";
 import { evaluateBoardForBingo } from "../logic/bingo.js";
 import { createModalController } from "./modals.js";
+import { createAccessibilityManager } from "./a11y.js";
+import { createThemeLoader } from "../theme/loader.js";
 
 const PLACEHOLDER_WORDS = Object.freeze([
   "Innovation",
@@ -38,21 +40,33 @@ const PLACEHOLDER_WORDS = Object.freeze([
   "Collaboration",
 ]);
 
+const THEME_CATALOG = Object.freeze([{ id: "default", label: "Default (Light)" }]);
+
 const boardElement = document.getElementById("bingo-board");
 const indicatorElement = document.querySelector(".bingo-indicator");
 const indicatorHiddenCopy = indicatorElement?.querySelector(".visually-hidden");
 const liveRegion = document.getElementById("sr-live-region");
 const modalRoot = document.getElementById("modal-root");
 const toolbar = document.querySelector(".toolbar");
+const themeSelect = document.querySelector('.toolbar__select[data-action="theme-select"]');
+const accessibility = createAccessibilityManager({
+  boardElement,
+  liveRegion,
+  boardSize: BOARD_SIZE,
+});
+const themeLoader = createThemeLoader();
 
 let appState = null;
 let activeWordList = [...PLACEHOLDER_WORDS];
 let hasAttachedHandlers = false;
 let modalController = null;
 
-function renderApp() {
+function renderApp(options = {}) {
+  const { preserveFocus = true } = options;
+
   if (boardElement && appState?.board) {
     renderBoard(boardElement, appState.board);
+    accessibility.refresh({ preserveFocus });
   }
 
   updateIndicator();
@@ -110,6 +124,155 @@ function primeLiveRegion(element) {
   element.textContent = "";
 }
 
+function populateThemeOptions() {
+  if (!themeSelect) {
+    return;
+  }
+
+  const persistedThemeId = appState?.theme?.id ?? themeLoader.getDefaultTheme().id;
+  const catalogEntries = [...THEME_CATALOG];
+
+  if (!catalogEntries.some((entry) => entry.id === persistedThemeId)) {
+    catalogEntries.push({
+      id: persistedThemeId,
+      label: `Saved theme (${persistedThemeId})`,
+    });
+  }
+
+  const options = catalogEntries.map((entry) => {
+    const option = document.createElement("option");
+    option.value = entry.id;
+    option.textContent = entry.label;
+    return option;
+  });
+
+  themeSelect.replaceChildren(...options);
+  themeSelect.value = persistedThemeId;
+}
+
+function ensureThemeSelectValue(themeId) {
+  if (!themeSelect) {
+    return;
+  }
+  themeSelect.value = themeId;
+}
+
+function ensureThemeOption(theme) {
+  if (!themeSelect || !theme || !theme.id) {
+    return;
+  }
+
+  let option = Array.from(themeSelect.options).find((item) => item.value === theme.id);
+
+  if (!option) {
+    option = document.createElement("option");
+    option.value = theme.id;
+    themeSelect.appendChild(option);
+  }
+
+  const label = theme.name && theme.name.trim().length > 0 ? theme.name : theme.id;
+  option.textContent = label;
+  ensureThemeSelectValue(theme.id);
+}
+
+function initializeTheme() {
+  const desiredThemeId = appState?.theme?.id ?? themeLoader.getDefaultTheme().id;
+  return loadThemeById(desiredThemeId, { announce: false }).catch((error) => {
+    console.error(`[ui/view] Failed to apply saved theme "${desiredThemeId}".`, error);
+
+    if (desiredThemeId !== themeLoader.getDefaultTheme().id) {
+      showThemeError(
+        `The saved theme "${desiredThemeId}" could not be loaded. The default theme has been applied instead.`
+      );
+      accessibility.announce("Default theme restored after failing to load the saved theme.");
+    }
+
+    ensureThemeSelectValue(themeLoader.getDefaultTheme().id);
+    return loadThemeById(themeLoader.getDefaultTheme().id, { announce: false }).catch(
+      (fallbackError) => {
+        console.error("[ui/view] Failed to apply the default theme.", fallbackError);
+        return themeLoader.getDefaultTheme();
+      }
+    );
+  });
+}
+
+async function loadThemeById(themeId, options = {}) {
+  const { announce = false } = options;
+  const requestedThemeId =
+    typeof themeId === "string" && themeId.trim().length > 0
+      ? themeId.trim()
+      : themeLoader.getDefaultTheme().id;
+
+  const appliedTheme = await themeLoader.load(requestedThemeId);
+  ensureThemeOption(appliedTheme);
+
+  const currentTheme = appState?.theme ?? null;
+  if (
+    !currentTheme ||
+    currentTheme.id !== appliedTheme.id ||
+    currentTheme.version !== appliedTheme.version
+  ) {
+    updateState((draft) => {
+      draft.theme = {
+        id: appliedTheme.id,
+        version: appliedTheme.version,
+      };
+    });
+  }
+
+  if (announce) {
+    accessibility.announce(`Theme switched to ${appliedTheme.name}.`);
+  }
+
+  return appliedTheme;
+}
+
+function handleThemeSelection(themeId) {
+  const previousThemeId = appState?.theme?.id ?? themeLoader.getDefaultTheme().id;
+
+  loadThemeById(themeId, { announce: true })
+    .then((theme) => {
+      ensureThemeSelectValue(theme.id);
+    })
+    .catch((error) => {
+      console.error(`[ui/view] Failed to load theme "${themeId}".`, error);
+      ensureThemeSelectValue(previousThemeId);
+      showThemeError(
+        `The theme "${themeId}" could not be loaded. The previous theme has been restored.`
+      );
+      accessibility.announce("Theme selection failed. Previous theme restored.");
+    });
+}
+
+function showThemeError(message) {
+  if (modalController && typeof modalController.open === "function") {
+    modalController.open({
+      id: "modal-theme-error",
+      title: "Theme failed to load",
+      body: message,
+      primary: {
+        label: "Continue",
+        onSelect: () => {
+          if (liveRegion) {
+            liveRegion.textContent = "";
+          }
+        },
+      },
+      onClose: () => {
+        if (liveRegion) {
+          liveRegion.textContent = "";
+        }
+      },
+    });
+    return;
+  }
+
+  if (typeof window !== "undefined" && typeof window.alert === "function") {
+    window.alert(message);
+  }
+}
+
 function init() {
   modalController = createModalController({ container: modalRoot });
   setupCorruptionHandler(modalController, liveRegion);
@@ -117,11 +280,16 @@ function init() {
   appState = loadResult.state;
   synchronizeBingoState();
 
+  populateThemeOptions();
+  initializeTheme().catch((error) => {
+    console.error("[ui/view] Theme initialization failed.", error);
+  });
+
   if (loadResult.status === "fresh" || needsBootstrap(appState.board)) {
     bootstrapBoard();
   }
 
-  renderApp();
+  renderApp({ preserveFocus: false });
   primeLiveRegion(liveRegion);
   attachEventHandlers();
 }
@@ -146,7 +314,7 @@ function bootstrapBoard() {
         hash: draft.wordList?.hash || "placeholder-list",
       };
     });
-    announce("A starter bingo board has been generated with placeholder content.");
+    accessibility.announce("A starter bingo board has been generated with placeholder content.");
   } catch (error) {
     console.error("[ui/view] Unable to bootstrap board.", error);
   }
@@ -187,6 +355,7 @@ function attachEventHandlers() {
 
   if (toolbar) {
     toolbar.addEventListener("click", handleToolbarClick);
+    toolbar.addEventListener("change", handleToolbarChange);
   }
 
   hasAttachedHandlers = true;
@@ -206,12 +375,29 @@ function handleBoardClick(event) {
     return;
   }
 
+  const hadBingo = Boolean(appState?.bingo?.hasBingo);
+
   updateState((draft) => {
     draft.board = toggleCell(draft.board, row, col);
     applyBingoEvaluation(draft);
   });
 
   renderApp();
+  accessibility.focusCell(row, col, { preventScroll: true });
+
+  const refreshedCell = boardElement?.querySelector(
+    `.board__cell[data-row="${row}"][data-col="${col}"]`
+  );
+  const cellState = refreshedCell?.dataset.state === "marked" ? "marked" : "unmarked";
+  const cellLabel = refreshedCell?.textContent?.trim() || "cell";
+  const hasBingo = Boolean(appState?.bingo?.hasBingo);
+  let announcement = `Cell "${cellLabel}" ${cellState}.`;
+  if (!hadBingo && hasBingo) {
+    announcement += " Bingo achieved!";
+  } else if (hadBingo && !hasBingo) {
+    announcement += " Bingo cleared.";
+  }
+  accessibility.announce(announcement);
 }
 
 function handleToolbarClick(event) {
@@ -231,7 +417,7 @@ function handleToolbarClick(event) {
       applyBingoEvaluation(draft);
     });
     renderApp();
-    announce("All marks cleared. Free space remains marked.");
+    accessibility.announce("All marks cleared. Free space remains marked.");
     return;
   }
 
@@ -243,7 +429,7 @@ function handleToolbarClick(event) {
         applyBingoEvaluation(draft);
       });
       renderApp();
-      announce("Board regenerated with the current word list.");
+      accessibility.announce("Board regenerated with the current word list.");
     } catch (error) {
       console.error("[ui/view] Unable to regenerate board.", error);
     }
@@ -251,18 +437,33 @@ function handleToolbarClick(event) {
   }
 
   if (action === "load-list") {
-    announce("Loading a new list will be available once the file handling flow is implemented.");
+    accessibility.announce(
+      "Loading a new list will be available once the file handling flow is implemented."
+    );
   }
 }
 
-function announce(message) {
-  if (!liveRegion) {
+function handleToolbarChange(event) {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
     return;
   }
-  liveRegion.textContent = "";
-  window.setTimeout(() => {
-    liveRegion.textContent = message;
-  }, 50);
+
+  const isSelectElement =
+    (typeof HTMLSelectElement !== "undefined" && target instanceof HTMLSelectElement) ||
+    target.tagName === "SELECT";
+
+  if (!isSelectElement) {
+    return;
+  }
+
+  if (target.dataset.action !== "theme-select") {
+    return;
+  }
+
+  const themeId =
+    typeof target.value === "string" ? target.value : String(target.getAttribute("value") ?? "");
+  handleThemeSelection(themeId);
 }
 
 function applyBingoEvaluation(draft) {
