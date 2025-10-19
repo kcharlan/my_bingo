@@ -13,6 +13,19 @@ A simple, self-contained, offline classical (5x5) bingo application.
 
 To get started, simply open the `bingo_app.html` file in your web browser.
 
+UPDATE: Not true. Local files appears a cross site, and are blocked. You need to
+run a web server.
+
+Node (tested and worked):
+```bash
+npx http-server -c-1 .
+```
+
+Python (not tested):
+```bash
+python3 -m http.server 8080
+```
+
 ## Usage
 
 - Click on a square to mark it.

@@ -211,15 +211,17 @@ artifacts:
   - npx eslint js/io/wordlist.js
 ```
 
-### [ ] T10 — Toolbar actions wiring
+### [x] T10 — Toolbar actions wiring
 
 ```yaml
 id: T10
-status: todo
+status: done
 goal: Hook Clear/Regenerate/Load List to store/board/bingo/wordlist.
 files:
   - update: /js/ui/view.js
 commands: []
+artifacts:
+  - npm run lint
 accepts:
   - F7 clear works
   - F8 regenerate works
@@ -227,15 +229,17 @@ accepts:
   - E5 reset flow correct
 ```
 
-### [ ] T11 — Restore flow polish
+### [x] T11 — Restore flow polish
 
 ```yaml
 id: T11
-status: todo
+status: done
 goal: Missing list modal; last-good theme fallback on failure.
 files:
   - updates within store/theme loaders
 commands: []
+artifacts:
+  - npm run lint
 accepts:
   - F5 friendly missing-list modal
   - T3/T4 revert behavior
