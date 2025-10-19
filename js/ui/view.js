@@ -40,7 +40,10 @@ const PLACEHOLDER_WORDS = Object.freeze([
   "Collaboration",
 ]);
 
-const THEME_CATALOG = Object.freeze([{ id: "default", label: "Default (Light)" }]);
+const THEME_CATALOG = Object.freeze([
+  { id: "default", label: "Default (Light)" },
+  { id: "high_contrast", label: "High Contrast" },
+]);
 
 const boardElement = document.getElementById("bingo-board");
 const indicatorElement = document.querySelector(".bingo-indicator");

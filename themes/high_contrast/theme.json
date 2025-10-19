@@ -1,0 +1,6 @@
+{
+  "name": "High Contrast",
+  "version": "1.0.0",
+  "description": "High-contrast theme optimized for WCAG 2.1 AA readability.",
+  "css": "theme.css"
+}

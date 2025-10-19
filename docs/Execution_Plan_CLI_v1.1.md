@@ -241,16 +241,18 @@ accepts:
   - T3/T4 revert behavior
 ```
 
-### [ ] T12 — High-contrast theme
+### [x] T12 — High-contrast theme
 
 ```yaml
 id: T12
-status: todo
+status: done
 goal: WCAG AA high-contrast theme.
 files:
   - /themes/high_contrast/theme.json
   - /themes/high_contrast/theme.css
 commands: []
+artifacts:
+  - npm run lint
 accepts:
   - A5 contrast thresholds met
   - T7 theme selectable
