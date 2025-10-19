@@ -75,7 +75,6 @@ let hasShownMissingWordListModal = false;
 let hasAttachedHandlers = false;
 let modalController = null;
 let lastGoodThemeId = themeLoader.getDefaultTheme().id;
-let pendingMissingWordListNotice = false;
 
 function renderApp(options = {}) {
   const { preserveFocus = true } = options;
@@ -182,7 +181,6 @@ function setActiveWordList(words, metadata, source = WORD_LIST_SOURCES.PLACEHOLD
   activeWordListSource = source;
   if (source === WORD_LIST_SOURCES.FILE) {
     hasShownMissingWordListModal = false;
-    pendingMissingWordListNotice = false;
   }
   return true;
 }
@@ -434,9 +432,13 @@ function showMissingWordListModal() {
     return;
   }
 
-  const filename = activeWordListMetadata?.filename || "previous word list";
+  const filename =
+    activeWordListMetadata?.filename?.trim().length > 0 ? activeWordListMetadata.filename : null;
+  if (!filename) {
+    return;
+  }
+
   hasShownMissingWordListModal = true;
-  pendingMissingWordListNotice = false;
 
   modalController.open({
     id: "modal-wordlist-missing",
@@ -469,20 +471,6 @@ function showMissingWordListModal() {
   accessibility.announce(
     `Saved word list "${filename}" needs to be re-selected to regenerate boards.`
   );
-}
-
-function maybeShowMissingWordListModal() {
-  if (!pendingMissingWordListNotice) {
-    return;
-  }
-  if (!activeWordListMetadata || !activeWordListMetadata.filename) {
-    return;
-  }
-  if (hasShownMissingWordListModal) {
-    return;
-  }
-
-  showMissingWordListModal();
 }
 
 function initializeTheme() {
@@ -627,20 +615,18 @@ function init() {
   renderApp({ preserveFocus: false });
   primeLiveRegion(liveRegion);
   attachEventHandlers();
-  if (pendingMissingWordListNotice) {
-    maybeShowMissingWordListModal();
-  }
+  restoreWordListPrompt(loadResult.status);
 }
 
 function hydrateStateStore() {
   try {
     const result = store.load();
-    restoreWordListContext(result.state, result.status);
+    restoreWordListContext(result.state);
     return result;
   } catch (error) {
     console.error("[ui/view] Failed to hydrate initial state store.", error);
     const fallback = store.getDefaultState();
-    restoreWordListContext(fallback, "reset");
+    restoreWordListContext(fallback);
     return { state: fallback, status: "reset" };
   }
 }
@@ -836,7 +822,7 @@ function applyBingoEvaluation(draft) {
   }
 }
 
-function restoreWordListContext(state, status) {
+function restoreWordListContext(state) {
   if (!state) {
     setActiveWordList(PLACEHOLDER_WORDS, null, WORD_LIST_SOURCES.PLACEHOLDER);
     return;
@@ -853,13 +839,11 @@ function restoreWordListContext(state, status) {
   const derived = deriveWordListFromBoard(state.board);
   if (derived.length >= REQUIRED_UNIQUE_WORDS && metadata && metadata.filename) {
     setActiveWordList(derived, metadata, WORD_LIST_SOURCES.RESTORED);
-    pendingMissingWordListNotice = status !== "fresh";
     return;
   }
 
   if (derived.length >= REQUIRED_UNIQUE_WORDS) {
     setActiveWordList(derived, null, WORD_LIST_SOURCES.PLACEHOLDER);
-    pendingMissingWordListNotice = false;
     return;
   }
 
@@ -868,7 +852,18 @@ function restoreWordListContext(state, status) {
     metadata && metadata.filename ? metadata : null,
     WORD_LIST_SOURCES.PLACEHOLDER
   );
-  pendingMissingWordListNotice = Boolean(metadata && metadata.filename);
+}
+
+function restoreWordListPrompt(loadStatus) {
+  if (loadStatus !== "loaded") {
+    return;
+  }
+
+  const hasFilename = Boolean(activeWordListMetadata?.filename);
+  if (activeWordListSource === WORD_LIST_SOURCES.RESTORED && hasFilename) {
+    hasShownMissingWordListModal = false;
+    showMissingWordListModal();
+  }
 }
 
 function synchronizeBingoState() {

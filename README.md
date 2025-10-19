@@ -17,11 +17,13 @@ UPDATE: Not true. Local files appears a cross site, and are blocked. You need to
 run a web server.
 
 Node (tested and worked):
+
 ```bash
 npx http-server -c-1 .
 ```
 
 Python (not tested):
+
 ```bash
 python3 -m http.server 8080
 ```
