@@ -1,3 +1,5 @@
+import { getRandomGenerator } from "../runtime/runtime.js";
+
 const BOARD_SIZE = 5;
 const BOARD_CELL_COUNT = BOARD_SIZE * BOARD_SIZE;
 const FREE_COORDINATE = Object.freeze({ row: 2, col: 2 });
@@ -49,9 +51,7 @@ function shuffleInPlace(values, rng) {
   return values;
 }
 
-function defaultRng() {
-  return Math.random();
-}
+const defaultRng = getRandomGenerator();
 
 export function createEmptyBoard() {
   const cells = [];

@@ -277,15 +277,17 @@ accepts:
   - S1/S2/S3/S4 pass
 ```
 
-### [ ] T14 — Determinism & dev hooks
+### [x] T14 — Determinism & dev hooks
 
 ```yaml
 id: T14
-status: todo
+status: done
 goal: Seedable RNG and window.__bingo__ snapshot for tests.
 files:
   - config and test hook wiring
 commands: []
+artifacts:
+  - npx eslint js/runtime/runtime.js js/logic/board.js js/ui/view.js
 accepts:
   - repeatable E2E with a fixed seed
 ```

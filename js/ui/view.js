@@ -13,6 +13,7 @@ import { createModalController } from "./modals.js";
 import { createAccessibilityManager } from "./a11y.js";
 import { createThemeLoader } from "../theme/loader.js";
 import { loadWordListFromFile, WordListError } from "../io/wordlist.js";
+import { publishSnapshot } from "../runtime/runtime.js";
 
 const PLACEHOLDER_WORDS = Object.freeze([
   "Innovation",
@@ -167,6 +168,7 @@ function setActiveWordList(words, metadata, source = WORD_LIST_SOURCES.PLACEHOLD
     activeWordList = [...PLACEHOLDER_WORDS];
     activeWordListMetadata = null;
     activeWordListSource = WORD_LIST_SOURCES.PLACEHOLDER;
+    syncDevSnapshot({ event: "wordlist-fallback" });
     return false;
   }
 
@@ -182,6 +184,7 @@ function setActiveWordList(words, metadata, source = WORD_LIST_SOURCES.PLACEHOLD
   if (source === WORD_LIST_SOURCES.FILE) {
     hasShownMissingWordListModal = false;
   }
+  syncDevSnapshot({ event: "wordlist-update", source });
   return true;
 }
 
@@ -439,6 +442,7 @@ function showMissingWordListModal() {
   }
 
   hasShownMissingWordListModal = true;
+  syncDevSnapshot({ event: "missing-wordlist-modal-opened" });
 
   modalController.open({
     id: "modal-wordlist-missing",
@@ -616,6 +620,7 @@ function init() {
   primeLiveRegion(liveRegion);
   attachEventHandlers();
   restoreWordListPrompt(loadResult.status);
+  syncDevSnapshot({ event: "init-complete" });
 }
 
 function hydrateStateStore() {
@@ -668,6 +673,7 @@ function updateState(mutator) {
 
   try {
     appState = store.save(draft);
+    syncDevSnapshot({ event: "state-update" });
   } catch (error) {
     console.error("[ui/view] Failed to persist state.", error);
   }
@@ -820,6 +826,38 @@ function applyBingoEvaluation(draft) {
     console.error("[ui/view] Failed to evaluate bingo state.", error);
     draft.bingo = { hasBingo: false, lineCount: 0, lines: [] };
   }
+}
+
+function createWordListSnapshot() {
+  return {
+    source: activeWordListSource,
+    entries: Array.isArray(activeWordList) ? [...activeWordList] : [],
+    metadata: activeWordListMetadata
+      ? {
+          filename:
+            typeof activeWordListMetadata.filename === "string"
+              ? activeWordListMetadata.filename
+              : "",
+          hash: typeof activeWordListMetadata.hash === "string" ? activeWordListMetadata.hash : "",
+        }
+      : null,
+  };
+}
+
+function syncDevSnapshot(meta) {
+  const extra = {
+    wordList: createWordListSnapshot(),
+    ui: {
+      hasShownMissingWordListModal,
+      lastGoodThemeId,
+    },
+  };
+
+  if (typeof meta !== "undefined") {
+    extra.meta = meta;
+  }
+
+  publishSnapshot(appState ?? null, extra);
 }
 
 function restoreWordListContext(state) {
