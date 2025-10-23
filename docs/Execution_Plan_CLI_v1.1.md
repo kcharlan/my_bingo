@@ -292,11 +292,11 @@ accepts:
   - repeatable E2E with a fixed seed
 ```
 
-### [ ] T15 — Final acceptance & regression pass
+### [x] T15 — Final acceptance & regression pass
 
 ```yaml
 id: T15
-status: todo
+status: done
 goal: Run full Test Plan v1.2; fix issues; tag v1.0.
 files:
   - /CHANGELOG.md
@@ -304,6 +304,9 @@ files:
 commands:
   - npm run test (if configured)
   - manual check of regression checklist
+artifacts:
+  - npm run lint
+notes: Manual UI regression steps tracked in Test Plan; automated lint executed in CLI session.
 accepts:
   - All regression items ticked
 ```
