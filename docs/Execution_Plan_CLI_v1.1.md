@@ -262,15 +262,17 @@ accepts:
   - T7 theme selectable
 ```
 
-### [ ] T13 — Security & hygiene validation
+### [x] T13 — Security & hygiene validation
 
 ```yaml
 id: T13
-status: todo
+status: done
 goal: Block http(s) and JS in themes; sanitize JSON.
 files:
   - validators integrated in loaders
 commands: []
+artifacts:
+  - npx eslint js/theme/loader.js
 accepts:
   - S1/S2/S3/S4 pass
 ```

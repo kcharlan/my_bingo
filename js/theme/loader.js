@@ -54,6 +54,7 @@ export function createThemeLoader(options = {}) {
 
     const cssUrl = normalizePath(`${themeBase}/${sanitized.css}`);
     const cssText = await fetchCss(fetchImpl, cssUrl, normalizedId);
+    ensureCssSecurity(cssText, normalizedId);
 
     const nextStyle = applyCss(documentRef, cssText);
     styleElement = nextStyle;
@@ -179,26 +180,22 @@ async function fetchCss(fetchImpl, url, themeId) {
 }
 
 function sanitizeMetadata(metadata, themeId) {
-  if (metadata === null || typeof metadata !== "object") {
-    throw new Error(`Theme "${themeId}" metadata must be an object.`);
+  if (!isPlainObject(metadata)) {
+    throw new Error(`Theme "${themeId}" metadata must be a plain object.`);
   }
 
-  const name = isNonEmptyString(metadata.name) ? metadata.name.trim() : "";
-  const css = isNonEmptyString(metadata.css) ? metadata.css.trim() : "";
-  const version = isNonEmptyString(metadata.version) ? metadata.version.trim() : "";
-  const description = isNonEmptyString(metadata.description) ? metadata.description.trim() : "";
+  const name = sanitizeTextField(metadata.name, "name", themeId, { required: true });
+  const css = sanitizeTextField(metadata.css, "css", themeId, { required: true });
+  const version = sanitizeTextField(metadata.version, "version", themeId, { required: true });
+  const description = sanitizeTextField(metadata.description, "description", themeId, {
+    required: false,
+  });
 
-  if (!name) {
-    throw new Error(`Theme "${themeId}" metadata is missing a name.`);
+  const sanitized = { name, css, version };
+  if (description) {
+    sanitized.description = description;
   }
-  if (!css) {
-    throw new Error(`Theme "${themeId}" metadata is missing a CSS file reference.`);
-  }
-  if (!version) {
-    throw new Error(`Theme "${themeId}" metadata is missing a version.`);
-  }
-
-  return { name, css, version, description };
+  return sanitized;
 }
 
 function normalizeThemeId(themeId) {
@@ -242,4 +239,100 @@ function ensureThemeAttribute(doc, themeId) {
     return;
   }
   doc.documentElement.setAttribute("data-theme", themeId);
+}
+
+function sanitizeTextField(value, fieldName, themeId, options = {}) {
+  const required = options.required === true;
+  if (!isNonEmptyString(value)) {
+    if (required) {
+      throw new Error(`Theme "${themeId}" metadata is missing a ${fieldName}.`);
+    }
+    return "";
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    if (required) {
+      throw new Error(`Theme "${themeId}" metadata ${fieldName} must not be empty.`);
+    }
+    return "";
+  }
+
+  if (containsControlCharacters(trimmed)) {
+    throw new Error(
+      `Theme "${themeId}" metadata ${fieldName} contains disallowed control characters.`
+    );
+  }
+
+  return trimmed;
+}
+
+function isPlainObject(value) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function ensureCssSecurity(cssText, themeId) {
+  if (typeof cssText !== "string") {
+    throw new Error(`Theme "${themeId}" CSS could not be validated.`);
+  }
+
+  const stripped = stripCssComments(cssText);
+  const lower = stripped.toLowerCase();
+
+  if (lower.includes("<script")) {
+    throw new Error(`Theme "${themeId}" CSS must not contain script tags.`);
+  }
+
+  const importPattern =
+    /@import\s+(?:(["'])(.*?)\1|url\(\s*(?:(["'])(.*?)\3|([^)]*?))\s*\)|([^;\s]+))/gi;
+  let importMatch;
+  while ((importMatch = importPattern.exec(stripped))) {
+    const target = importMatch[2] ?? importMatch[4] ?? importMatch[5] ?? importMatch[6] ?? "";
+    validateCssReference(target, themeId, { kind: "import" });
+  }
+
+  const urlPattern = /url\(\s*(?:(["'])(.*?)\1|([^)]*?))\s*\)/gi;
+  let urlMatch;
+  while ((urlMatch = urlPattern.exec(stripped))) {
+    const target = urlMatch[2] ?? urlMatch[3] ?? "";
+    validateCssReference(target, themeId, { kind: "url" });
+  }
+}
+
+function stripCssComments(cssText) {
+  return cssText.replace(/\/\*[\s\S]*?\*\//g, "");
+}
+
+function validateCssReference(rawTarget, themeId, options = {}) {
+  const kind = options.kind ?? "url";
+  const target = typeof rawTarget === "string" ? rawTarget.trim() : "";
+  if (!target || target.startsWith("#")) {
+    return;
+  }
+
+  if (/javascript:/i.test(target)) {
+    throw new Error(`Theme "${themeId}" CSS must not reference javascript: URLs.`);
+  }
+
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(target) || target.startsWith("//")) {
+    throw new Error(`Theme "${themeId}" CSS ${kind} references must be local relative paths.`);
+  }
+
+  if (!isSafeRelativePath(target)) {
+    throw new Error(`Theme "${themeId}" CSS ${kind} references must be local relative paths.`);
+  }
+}
+
+function containsControlCharacters(value) {
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    if ((code >= 0 && code <= 31) || code === 127) {
+      return true;
+    }
+  }
+  return false;
 }
