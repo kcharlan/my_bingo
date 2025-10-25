@@ -1,0 +1,13 @@
+{
+  "name": "Thanksgiving",
+  "version": "1.0.0",
+  "css": "theme.css",
+  "colors": {
+    "background": "#F6E7C8",
+    "text": "#2A1C12",
+    "primary": "#C65A1E",
+    "accent": "#B6862E"
+  },
+  "font_family": "Georgia, Garamond, \"Times New Roman\", Times, serif",
+  "notes": "Warm autumn palette with parchment paper background, deep oranges, browns, and golds—cozy, festive, and legible."
+}

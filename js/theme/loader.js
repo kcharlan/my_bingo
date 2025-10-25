@@ -28,13 +28,14 @@ export function createThemeLoader(options = {}) {
   let activeTheme = { ...DEFAULT_THEME };
   let styleElement = null;
 
-  ensureThemeAttribute(documentRef, DEFAULT_THEME.id);
+  // Initialize root attributes for the default theme
+  ensureThemeAttributes(documentRef, DEFAULT_THEME.id, DEFAULT_THEME.name);
 
   async function load(themeId) {
     const normalizedId = normalizeThemeId(themeId);
     if (normalizedId === DEFAULT_THEME.id) {
       removeStyleElement();
-      ensureThemeAttribute(documentRef, DEFAULT_THEME.id);
+      ensureThemeAttributes(documentRef, DEFAULT_THEME.id, DEFAULT_THEME.name);
       activeTheme = { ...DEFAULT_THEME };
       return getActiveTheme();
     }
@@ -64,7 +65,8 @@ export function createThemeLoader(options = {}) {
       version: sanitized.version,
       description: sanitized.description ?? "",
     };
-    ensureThemeAttribute(documentRef, normalizedId);
+    // Expose both a stable ID and the human-friendly name as attributes
+    ensureThemeAttributes(documentRef, normalizedId, sanitized.name);
     return getActiveTheme();
   }
 
@@ -78,7 +80,7 @@ export function createThemeLoader(options = {}) {
 
   function reset() {
     removeStyleElement();
-    ensureThemeAttribute(documentRef, DEFAULT_THEME.id);
+    ensureThemeAttributes(documentRef, DEFAULT_THEME.id, DEFAULT_THEME.name);
     activeTheme = { ...DEFAULT_THEME };
     return getActiveTheme();
   }
@@ -239,6 +241,21 @@ function ensureThemeAttribute(doc, themeId) {
     return;
   }
   doc.documentElement.setAttribute("data-theme", themeId);
+}
+
+function ensureThemeAttributes(doc, themeId, themeName) {
+  if (!doc?.documentElement) {
+    return;
+  }
+  // Stable machine-readable identifier (used for discovery and paths)
+  doc.documentElement.setAttribute("data-theme", themeId);
+  doc.documentElement.setAttribute("data-theme-id", themeId);
+  // Human-friendly display name (from theme.json). Optional.
+  if (isNonEmptyString(themeName)) {
+    doc.documentElement.setAttribute("data-theme-name", String(themeName));
+  } else {
+    doc.documentElement.removeAttribute("data-theme-name");
+  }
 }
 
 function sanitizeTextField(value, fieldName, themeId, options = {}) {

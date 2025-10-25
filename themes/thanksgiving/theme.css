@@ -1,0 +1,124 @@
+/* Thanksgiving theme — scoped and app-compatible */
+:root[data-theme="thanksgiving"] {
+  color-scheme: light;
+  background-color: #F6E7C8; /* bg */
+}
+
+:root[data-theme="thanksgiving"] body {
+  background: #F6E7C8; /* bg */
+  color: #2A1C12;      /* text */
+  font-family: Georgia, Garamond, "Times New Roman", Times, serif;
+}
+
+:root[data-theme="thanksgiving"] .app {
+  background: #FFF9EC; /* paper */
+  border: 2px solid #8B5E2E; /* border */
+  box-shadow: 0 0 0 4px #F6E7C8;
+}
+
+:root[data-theme="thanksgiving"] .app__instructions {
+  color: #2A1C12;
+}
+
+/* Bingo indicator */
+:root[data-theme="thanksgiving"] .bingo-indicator {
+  background: #B6862E; /* accent */
+  color: #0D0704;      /* ink-strong */
+  border: 2px solid #8B5E2E;
+}
+:root[data-theme="thanksgiving"] .bingo-indicator[data-state="active"] {
+  background: #C65A1E; /* primary */
+  color: #FFFFFF;
+  box-shadow: 0 0 0 3px #8B5E2E;
+}
+
+/* Toolbar */
+:root[data-theme="thanksgiving"] .toolbar__theme-label {
+  color: #2A1C12;
+}
+:root[data-theme="thanksgiving"] .toolbar__button,
+:root[data-theme="thanksgiving"] .toolbar__select {
+  background: #C65A1E;   /* primary */
+  border: 2px solid #8B5E2E;
+  color: #FFFFFF;
+  box-shadow: none;
+}
+:root[data-theme="thanksgiving"] .toolbar__button:hover,
+:root[data-theme="thanksgiving"] .toolbar__select:hover {
+  background: #8C3E10;   /* primary-dark */
+  border-color: #8B5E2E;
+  color: #FFFFFF;
+}
+
+/* Board */
+:root[data-theme="thanksgiving"] .board-wrapper { background: transparent; }
+
+:root[data-theme="thanksgiving"] .board {
+  background: #FAF0D9; /* light card over bg */
+  border: 2px solid #8B5E2E;
+  box-shadow: 0 0 0 4px #F6E7C8;
+}
+
+:root[data-theme="thanksgiving"] .board__cell {
+  background: #FFF9EC;     /* paper */
+  color: #2A1C12;          /* text */
+  border: 2px solid #8B5E2E;
+  box-shadow: none;
+}
+:root[data-theme="thanksgiving"] .board__cell:not([data-free="true"]):hover {
+  transform: none;
+  background: #FAF0D9;
+}
+
+/* Free and Marked states driven by your app’s data-* attributes */
+:root[data-theme="thanksgiving"] .board__cell[data-free="true"] {
+  background: #B6862E; /* accent */
+  color: #0D0704;      /* ink-strong */
+  border-color: #8B5E2E;
+}
+:root[data-theme="thanksgiving"] .board__cell[data-state="marked"]::after {
+  inset: 6px;
+  background: rgba(198, 90, 30, 0.25); /* primary overlay */
+  border: 2px solid #C65A1E;
+}
+:root[data-theme="thanksgiving"] .board__cell[data-state="marked"]::before {
+  color: #C65A1E;
+}
+
+/* Focus ring on actual interactive elements */
+:root[data-theme="thanksgiving"] .board__cell:focus-visible,
+:root[data-theme="thanksgiving"] .toolbar__button:focus-visible,
+:root[data-theme="thanksgiving"] .toolbar__select:focus-visible {
+  outline: 3px solid #8C3E10; /* primary-dark */
+  outline-offset: 4px;
+  box-shadow: 0 0 0 4px #F6E7C8;
+}
+
+/* Modals */
+:root[data-theme="thanksgiving"] .modal-backdrop {
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 1000;
+}
+:root[data-theme="thanksgiving"] .modal {
+  background: #FFF9EC; /* paper */
+  color: #2A1C12;      /* text */
+  border: 2px solid #8B5E2E;
+}
+:root[data-theme="thanksgiving"] .modal__body { color: #2A1C12; }
+:root[data-theme="thanksgiving"] .modal__button { border: 2px solid #8B5E2E; }
+:root[data-theme="thanksgiving"] .modal__button--primary {
+  background: #C65A1E;
+  color: #FFFFFF;
+  box-shadow: none;
+}
+:root[data-theme="thanksgiving"] .modal__button--primary:hover { background: #8C3E10; }
+:root[data-theme="thanksgiving"] .modal__button--secondary {
+  background: #FAF0D9;
+  color: #2A1C12;
+}
+:root[data-theme="thanksgiving"] .modal__button--secondary:hover { background: #FFF9EC; }
+:root[data-theme="thanksgiving"] .modal__button:focus-visible {
+  outline: 3px solid #8C3E10;
+  outline-offset: 2px;
+  box-shadow: none;
+}

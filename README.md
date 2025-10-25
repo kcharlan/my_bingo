@@ -68,6 +68,15 @@ Security/validation:
 - CSS is injected as a `<style>` element; no scripts are executed.
 - Invalid packs are skipped and the last good theme remains active.
 
+CSS targeting notes:
+- The app sets attributes on the root element so your theme CSS can target either the theme id or the human-friendly name.
+  - `data-theme` and `data-theme-id` contain the theme id (folder name), e.g. `thanksgiving2c`.
+  - `data-theme-name` contains the display name from `theme.json`, e.g. `Thanksgiving2c`.
+- CSS attribute selectors compare values case-sensitively by default. You can:
+  - Use the id form: `:root[data-theme="thanksgiving2c"] { ... }` (recommended, stable).
+  - Or use the name form: `:root[data-theme-name="Thanksgiving2c"] { ... }`.
+  - Or add the CSS case-insensitive flag to match regardless of case: `:root[data-theme="Thanksgiving2c" i] { ... }`.
+
 Optional `themes/manifest.json` (for servers without directory listings):
 
 - If your server does not list directories at `/themes/`, create `./themes/manifest.json` so the app can enumerate available themes without parsing HTML.
