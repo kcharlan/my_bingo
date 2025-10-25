@@ -1,0 +1,124 @@
+/* thanksgiving2 theme — scoped and app-compatible (dark harvest) */
+:root[data-theme="thanksgiving2"] {
+  color-scheme: dark;
+  background-color: #23120B; /* bg (deep roasted brown) */
+}
+
+:root[data-theme="thanksgiving2"] body {
+  background: #23120B; /* bg */
+  color: #FFF5E1;      /* text (cream) */
+  font-family: Georgia, Garamond, "Times New Roman", Times, serif;
+}
+
+:root[data-theme="thanksgiving2"] .app {
+  background: #2A170E; /* paper */
+  border: 2px solid #3A2015; /* border */
+  box-shadow: 0 0 0 4px rgba(216,110,36,0.14);
+}
+
+:root[data-theme="thanksgiving2"] .app__instructions {
+  color: #FFF5E1;
+}
+
+/* Bingo indicator */
+:root[data-theme="thanksgiving2"] .bingo-indicator {
+  background: #8C2436; /* accent (cranberry) */
+  color: #FFF5E1;
+  border: 2px solid #5F1825;
+}
+:root[data-theme="thanksgiving2"] .bingo-indicator[data-state="active"] {
+  background: #D86E24; /* primary (pumpkin) */
+  color: #23120B;
+  box-shadow: 0 0 0 3px rgba(216,110,36,0.14);
+}
+
+/* Toolbar */
+:root[data-theme="thanksgiving2"] .toolbar__theme-label {
+  color: #FFF5E1;
+}
+:root[data-theme="thanksgiving2"] .toolbar__button,
+:root[data-theme="thanksgiving2"] .toolbar__select {
+  background: #D86E24;   /* primary */
+  border: 2px solid #AC581C; /* primary-dark (~20% darker) */
+  color: #23120B;
+  box-shadow: none;
+}
+:root[data-theme="thanksgiving2"] .toolbar__button:hover,
+:root[data-theme="thanksgiving2"] .toolbar__select:hover {
+  background: #AC581C;   /* primary-dark */
+  border-color: #7D3E14;
+  color: #FFF5E1;
+}
+
+/* Board */
+:root[data-theme="thanksgiving2"] .board-wrapper { background: transparent; }
+
+:root[data-theme="thanksgiving2"] .board {
+  background: #26150E;
+  border: 2px solid #3A2015;
+  box-shadow: 0 0 0 4px rgba(216,110,36,0.14);
+}
+
+:root[data-theme="thanksgiving2"] .board__cell {
+  background: #2F1A10;
+  color: #FFF5E1;
+  border: 2px solid #3A2015;
+  box-shadow: none;
+}
+:root[data-theme="thanksgiving2"] .board__cell:not([data-free="true"]):hover {
+  transform: none;
+  background: #341E13;
+}
+
+/* Free and Marked states driven by your app’s data-* attributes */
+:root[data-theme="thanksgiving2"] .board__cell[data-free="true"] {
+  background: #8C2436; /* accent */
+  color: #FFF5E1;
+  border-color: #5F1825;
+}
+:root[data-theme="thanksgiving2"] .board__cell[data-state="marked"]::after {
+  inset: 6px;
+  background: rgba(216,110,36,0.14); /* primary overlay */
+  border: 2px solid #D86E24;
+}
+:root[data-theme="thanksgiving2"] .board__cell[data-state="marked"]::before {
+  color: #D86E24;
+}
+
+/* Focus ring on actual interactive elements */
+:root[data-theme="thanksgiving2"] .board__cell:focus-visible,
+:root[data-theme="thanksgiving2"] .toolbar__button:focus-visible,
+:root[data-theme="thanksgiving2"] .toolbar__select:focus-visible {
+  outline: 3px solid #AC581C; /* primary-dark */
+  outline-offset: 4px;
+  box-shadow: 0 0 0 4px rgba(216,110,36,0.14);
+}
+
+/* Modals */
+:root[data-theme="thanksgiving2"] .modal-backdrop {
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+}
+:root[data-theme="thanksgiving2"] .modal {
+  background: #2B160E;
+  color: #FFF5E1;
+  border: 2px solid #3A2015;
+}
+:root[data-theme="thanksgiving2"] .modal__body { color: #FFF5E1; }
+:root[data-theme="thanksgiving2"] .modal__button { border: 2px solid #3A2015; }
+:root[data-theme="thanksgiving2"] .modal__button--primary {
+  background: #D86E24;
+  color: #23120B;
+  box-shadow: none;
+}
+:root[data-theme="thanksgiving2"] .modal__button--primary:hover { background: #AC581C; }
+:root[data-theme="thanksgiving2"] .modal__button--secondary {
+  background: #2F1A10;
+  color: #FFF5E1;
+}
+:root[data-theme="thanksgiving2"] .modal__button--secondary:hover { background: #341E13; }
+:root[data-theme="thanksgiving2"] .modal__button:focus-visible {
+  outline: 3px solid #AC581C;
+  outline-offset: 2px;
+  box-shadow: none;
+}

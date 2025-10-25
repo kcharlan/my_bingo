@@ -1,0 +1,14 @@
+{
+  "name": "Thanksgiving2",
+  "version": "1.0.0",
+  "css": "theme.css",
+  "colors": {
+    "background": "#23120B",
+    "text": "#FFF5E1",
+    "primary": "#D86E24",
+    "accent": "#8C2436"
+  },
+  "font_family": "Georgia, Garamond, \"Times New Roman\", Times, serif",
+  "notes": "Dark, cozy harvest: roasted-brown background, pumpkin primary, cranberry accent, cream text for high contrast."
+}
+
