@@ -12,6 +12,7 @@ import { evaluateBoardForBingo } from "../logic/bingo.js";
 import { createModalController } from "./modals.js";
 import { createAccessibilityManager } from "./a11y.js";
 import { createThemeLoader } from "../theme/loader.js";
+import { createThemeCatalog } from "../theme/catalog.js";
 import { loadWordListFromFile, WordListError } from "../io/wordlist.js";
 import { publishSnapshot } from "../runtime/runtime.js";
 
@@ -49,11 +50,6 @@ const WORD_LIST_SOURCES = Object.freeze({
   RESTORED: "restored",
 });
 
-const THEME_CATALOG = Object.freeze([
-  { id: "default", label: "Default (Light)" },
-  { id: "high_contrast", label: "High Contrast" },
-]);
-
 const boardElement = document.getElementById("bingo-board");
 const indicatorElement = document.querySelector(".bingo-indicator");
 const indicatorHiddenCopy = indicatorElement?.querySelector(".visually-hidden");
@@ -67,6 +63,23 @@ const accessibility = createAccessibilityManager({
   boardSize: BOARD_SIZE,
 });
 const themeLoader = createThemeLoader();
+const themeCatalog = createThemeCatalog();
+const defaultTheme = themeLoader.getDefaultTheme();
+const DEFAULT_THEME_OPTION = Object.freeze({
+  id: defaultTheme.id,
+  label:
+    typeof defaultTheme.name === "string" && defaultTheme.name.trim().length > 0
+      ? defaultTheme.name
+      : defaultTheme.id,
+});
+const BUILT_IN_THEME_ENTRIES = Object.freeze([
+  { id: "high_contrast", label: "High Contrast" },
+]);
+const THEME_CATALOG_REFRESH_INTERVAL_MS = 15000;
+
+let discoveredThemeEntries = [];
+let catalogRefreshPromise = null;
+let catalogRefreshTimer = null;
 
 let appState = null;
 let activeWordList = [...PLACEHOLDER_WORDS];
@@ -213,7 +226,7 @@ function populateThemeOptions() {
   }
 
   const persistedThemeId = appState?.theme?.id ?? themeLoader.getDefaultTheme().id;
-  const catalogEntries = [...THEME_CATALOG];
+  const catalogEntries = buildThemeOptions();
 
   if (!catalogEntries.some((entry) => entry.id === persistedThemeId)) {
     catalogEntries.push({
@@ -231,6 +244,147 @@ function populateThemeOptions() {
 
   themeSelect.replaceChildren(...options);
   themeSelect.value = persistedThemeId;
+}
+
+function buildThemeOptions() {
+  const merged = [DEFAULT_THEME_OPTION, ...BUILT_IN_THEME_ENTRIES, ...discoveredThemeEntries];
+  return dedupeCatalogEntries(merged);
+}
+
+function dedupeCatalogEntries(entries) {
+  const seen = new Set();
+  const result = [];
+  for (const entry of entries) {
+    if (!entry || typeof entry.id !== "string") {
+      continue;
+    }
+    const id = entry.id;
+    if (seen.has(id)) {
+      continue;
+    }
+    seen.add(id);
+    result.push({
+      id,
+      label:
+        typeof entry.label === "string" && entry.label.trim().length > 0 ? entry.label.trim() : id,
+    });
+  }
+  return result;
+}
+
+async function startThemeCatalogWatcher() {
+  await refreshThemeCatalog({ silent: false });
+
+  if (typeof window === "undefined" || THEME_CATALOG_REFRESH_INTERVAL_MS <= 0) {
+    return;
+  }
+
+  if (catalogRefreshTimer) {
+    window.clearInterval(catalogRefreshTimer);
+  }
+
+  catalogRefreshTimer = window.setInterval(() => {
+    refreshThemeCatalog({ silent: true });
+  }, THEME_CATALOG_REFRESH_INTERVAL_MS);
+}
+
+function refreshThemeCatalog(options = {}) {
+  if (!themeCatalog || typeof themeCatalog.refresh !== "function") {
+    return Promise.resolve(buildThemeOptions());
+  }
+
+  if (catalogRefreshPromise) {
+    return catalogRefreshPromise;
+  }
+
+  const { silent = false } = options;
+
+  catalogRefreshPromise = themeCatalog
+    .refresh()
+    .then((entries) => {
+      const sanitized = sanitizeCatalogEntries(entries);
+      if (!haveCatalogEntriesChanged(discoveredThemeEntries, sanitized)) {
+        if (!themeSelect || themeSelect.options.length === 0) {
+          populateThemeOptions();
+        }
+        return buildThemeOptions();
+      }
+
+      discoveredThemeEntries = sanitized;
+      populateThemeOptions();
+      return buildThemeOptions();
+    })
+    .catch((error) => {
+      if (!silent) {
+        console.error("[ui/view] Theme catalog refresh failed.", error);
+      }
+      return buildThemeOptions();
+    })
+    .finally(() => {
+      catalogRefreshPromise = null;
+    });
+
+  return catalogRefreshPromise;
+}
+
+function sanitizeCatalogEntries(entries) {
+  if (!Array.isArray(entries)) {
+    return [];
+  }
+
+  const sanitized = [];
+  for (const entry of entries) {
+    if (!entry || typeof entry.id !== "string") {
+      continue;
+    }
+    sanitized.push({
+      id: entry.id,
+      label:
+        typeof entry.label === "string" && entry.label.trim().length > 0 ? entry.label.trim() : entry.id,
+      version: typeof entry.version === "string" ? entry.version : "",
+      description:
+        typeof entry.description === "string" && entry.description.trim().length > 0
+          ? entry.description.trim()
+          : "",
+    });
+  }
+
+  return dedupeDetailedCatalogEntries(sanitized);
+}
+
+function dedupeDetailedCatalogEntries(entries) {
+  const seen = new Set();
+  const result = [];
+  for (const entry of entries) {
+    if (seen.has(entry.id)) {
+      continue;
+    }
+    seen.add(entry.id);
+    result.push(entry);
+  }
+  return result;
+}
+
+function haveCatalogEntriesChanged(prev, next) {
+  if (!Array.isArray(prev) || !Array.isArray(next)) {
+    return true;
+  }
+
+  if (prev.length !== next.length) {
+    return true;
+  }
+
+  const serialize = (entry) => `${entry.id}::${entry.label}`;
+  const prevKeys = prev.map(serialize).sort();
+  const nextKeys = next.map(serialize).sort();
+
+  for (let index = 0; index < prevKeys.length; index += 1) {
+    if (prevKeys[index] !== nextKeys[index]) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function launchWordListPicker() {
@@ -600,13 +754,16 @@ function showThemeError(message) {
   }
 }
 
-function init() {
+async function init() {
   modalController = createModalController({ container: modalRoot });
   setupCorruptionHandler(modalController, liveRegion);
   const loadResult = hydrateStateStore();
   appState = loadResult.state;
   synchronizeBingoState();
 
+  await startThemeCatalogWatcher().catch((error) => {
+    console.error("[ui/view] Initial theme catalog refresh failed.", error);
+  });
   populateThemeOptions();
   initializeTheme().catch((error) => {
     console.error("[ui/view] Theme initialization failed.", error);
@@ -973,7 +1130,17 @@ function setupCorruptionHandler(modals, liveRegionContainer) {
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init, { once: true });
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+      init().catch((error) => {
+        console.error("[ui/view] Initialization failed.", error);
+      });
+    },
+    { once: true }
+  );
 } else {
-  init();
+  init().catch((error) => {
+    console.error("[ui/view] Initialization failed.", error);
+  });
 }

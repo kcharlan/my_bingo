@@ -5,7 +5,7 @@ const DEFAULT_THEME = Object.freeze({
   description: "Baseline styling packaged with the application.",
 });
 
-const DEFAULT_THEME_ROOT = "./themes";
+export const DEFAULT_THEME_ROOT = "./themes";
 const STYLE_DATA_ATTRIBUTE = "data-bingo-theme";
 
 export function createThemeLoader(options = {}) {
@@ -139,7 +139,7 @@ function createNoopLoader() {
   };
 }
 
-async function fetchThemeMetadata(fetchImpl, url, themeId) {
+export async function fetchThemeMetadata(fetchImpl, url, themeId) {
   let response;
   try {
     response = await fetchImpl(url, { cache: "no-store" });
@@ -179,7 +179,7 @@ async function fetchCss(fetchImpl, url, themeId) {
   }
 }
 
-function sanitizeMetadata(metadata, themeId) {
+export function sanitizeMetadata(metadata, themeId) {
   if (!isPlainObject(metadata)) {
     throw new Error(`Theme "${themeId}" metadata must be a plain object.`);
   }
@@ -198,7 +198,7 @@ function sanitizeMetadata(metadata, themeId) {
   return sanitized;
 }
 
-function normalizeThemeId(themeId) {
+export function normalizeThemeId(themeId) {
   const candidate = typeof themeId === "string" ? themeId.trim() : "";
   if (!candidate) {
     return DEFAULT_THEME.id;
