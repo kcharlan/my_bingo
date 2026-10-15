@@ -236,13 +236,6 @@ function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function ensureThemeAttribute(doc, themeId) {
-  if (!doc?.documentElement) {
-    return;
-  }
-  doc.documentElement.setAttribute("data-theme", themeId);
-}
-
 function ensureThemeAttributes(doc, themeId, themeName) {
   if (!doc?.documentElement) {
     return;
