@@ -20,15 +20,18 @@
   "author": "",
   "license": "ISC",
   "type": "module",
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24"
+  },
   "bugs": {
     "url": "https://github.com/kcharlan/my_bingo/issues"
   },
   "homepage": "https://github.com/kcharlan/my_bingo#readme",
   "devDependencies": {
-    "@eslint/js": "^9.38.0",
-    "eslint": "^9.38.0",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.12.0",
     "eslint-config-prettier": "^10.1.8",
-    "globals": "^16.4.0",
-    "prettier": "^3.6.2"
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10"
   }
 }
