@@ -1,7 +1,5 @@
 # --- Core ---
 node_modules/
-# add package-lock.json back in when project stabilizes or is finished
-package-lock.json
 
 # --- Build / Temp ---
 dist/

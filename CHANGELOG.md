@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- Dev toolchain upgraded to ESLint 10, `@eslint/js` 10, `globals` 17 and Prettier 3.9; see
+  `engines` in `package.json` for the minimum Node version.
+- Theme loader keeps the underlying network error as `cause` when a theme fails to load.
+
+### Removed
+
+- Unused `eslint-plugin-import` dependency and the `.eslintrc.json` file, which ESLint's flat
+  config never read.
+
+### Added
+
+- `npm test` (Node's built-in test runner) with theme loader error tests.
+- `package-lock.json` is now tracked so installs are reproducible.
+
 ## [1.0.0] - 2025-10-23
 
 ### Added

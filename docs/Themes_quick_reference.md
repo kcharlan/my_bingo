@@ -25,6 +25,7 @@ This app supports drop‑in CSS themes loaded from `./themes/` with no server re
 ```
 
 Rules:
+
 - `css` must be a local relative path (no `http(s):`, `//`, absolute paths, or `..`).
 - Metadata must be valid JSON; unknown fields are ignored.
 
@@ -35,6 +36,7 @@ Rules:
 - If no directory listing is available, add a `manifest.json` in `./themes/` using one of these formats:
 
 Array of IDs
+
 ```
 [
   "high_contrast",
@@ -43,6 +45,7 @@ Array of IDs
 ```
 
 Object wrapper
+
 ```
 {
   "themes": ["high_contrast", "thanksgiving"]

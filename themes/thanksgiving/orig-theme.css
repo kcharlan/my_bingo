@@ -2,16 +2,16 @@
 /* Implements colors from theme.json exactly and provides accessible, high-contrast UI elements. */
 
 :root {
-  --bg: #F6E7C8;
-  --text: #2A1C12;
-  --primary: #C65A1E;
-  --accent: #B6862E;
+  --bg: #f6e7c8;
+  --text: #2a1c12;
+  --primary: #c65a1e;
+  --accent: #b6862e;
 
   /* Derived neutrals for borders/overlays (kept in palette spirit) */
-  --border: #8B5E2E;   /* darker gold for legible borders (AA vs bg) */
-  --primary-dark: #8C3E10; /* deeper orange for marked/free contrasts */
-  --ink-strong: #0D0704;   /* near-black for optimal contrast on primary */
-  --paper: #FFF9EC; /* soft overlay for modal surfaces */
+  --border: #8b5e2e; /* darker gold for legible borders (AA vs bg) */
+  --primary-dark: #8c3e10; /* deeper orange for marked/free contrasts */
+  --ink-strong: #0d0704; /* near-black for optimal contrast on primary */
+  --paper: #fff9ec; /* soft overlay for modal surfaces */
 }
 
 * {
@@ -43,7 +43,7 @@ body {
 }
 
 .bingo-grid .cell {
-  background: #FAF0D9; /* slightly lighter than bg for subtle card look */
+  background: #faf0d9; /* slightly lighter than bg for subtle card look */
   color: var(--text);
   border: 1.5px solid var(--border); /* clear grid delineation */
   border-radius: 0.35rem;
@@ -61,7 +61,7 @@ body {
 
 .cell--marked {
   background: var(--primary-dark); /* deepened primary for contrast */
-  color: #FFFFFF; /* ≥7:1 on primary-dark */
+  color: #ffffff; /* ≥7:1 on primary-dark */
   font-weight: 700;
   box-shadow: inset 0 0 0 2px var(--border);
 }
@@ -82,7 +82,7 @@ body {
   border: 2px solid var(--border);
   border-radius: 0.75rem;
   padding: 1rem;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
 }
 
 :focus-visible {

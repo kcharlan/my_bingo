@@ -64,11 +64,13 @@ Theme pack layout:
 ```
 
 Security/validation:
+
 - CSS and asset paths must be local and relative (no `http(s):`, `//`, absolute paths, or `..`).
 - CSS is injected as a `<style>` element; no scripts are executed.
 - Invalid packs are skipped and the last good theme remains active.
 
 CSS targeting notes:
+
 - The app sets attributes on the root element so your theme CSS can target either the theme id or the human-friendly name.
   - `data-theme` and `data-theme-id` contain the theme id (folder name), e.g. `thanksgiving2c`.
   - `data-theme-name` contains the display name from `theme.json`, e.g. `Thanksgiving2c`.
@@ -82,7 +84,8 @@ Optional `themes/manifest.json` (for servers without directory listings):
 - If your server does not list directories at `/themes/`, create `./themes/manifest.json` so the app can enumerate available themes without parsing HTML.
 - Two supported formats:
 
-1) Array of IDs:
+1. Array of IDs:
+
 ```
 [
   "high_contrast",
@@ -90,7 +93,8 @@ Optional `themes/manifest.json` (for servers without directory listings):
 ]
 ```
 
-2) Object wrapper with `themes`:
+2. Object wrapper with `themes`:
+
 ```
 {
   "themes": ["high_contrast", "thanksgiving"]
