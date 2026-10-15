@@ -116,7 +116,7 @@ upgrade so Task 3's diff holds only the upgrade.
 **Interfaces:** none consumed or produced. `ensureThemeAttribute` (singular) has no callers; the
 live helper is `ensureThemeAttributes` (plural).
 
-- [ ] **Step 1: Branch and record the red baseline**
+- [x] **Step 1: Branch and record the red baseline**
 
 ```bash
 git switch -c chore/dependency-remediation
@@ -128,7 +128,7 @@ Expected: lint's only error is `no-unused-vars` for `ensureThemeAttribute` in `j
 `format:check` lists drifted files; `.git/format_drift.txt` is the file list for Steps 4 and 6. If
 lint shows any other error, stop and report.
 
-- [ ] **Step 2: Delete the dead function**
+- [x] **Step 2: Delete the dead function**
 
 Confirm it has no callers (the word-boundary match excludes the plural helper):
 
@@ -150,7 +150,7 @@ function ensureThemeAttribute(doc, themeId) {
 
 Run: `npm run lint` → exit 0.
 
-- [ ] **Step 3: Remove the dead eslintrc and unused plugin**
+- [x] **Step 3: Remove the dead eslintrc and unused plugin**
 
 ```bash
 git rm .eslintrc.json
@@ -160,7 +160,7 @@ npm run lint
 
 Expected: lint exits 0; `jq .devDependencies package.json` has no `eslint-plugin-import`.
 
-- [ ] **Step 4: Apply Prettier (format-only)**
+- [x] **Step 4: Apply Prettier (format-only)**
 
 ```bash
 npx prettier --write .
@@ -180,7 +180,7 @@ done
 
 Expected: no `CHANGED:` line.
 
-- [ ] **Step 5: Browser smoke**
+- [x] **Step 5: Browser smoke**
 
 ```bash
 npx --yes http-server -c-1 -p 8080 . >.git/http-server.log 2>&1 &
@@ -196,7 +196,7 @@ under `themes/`. Each choice must restyle the board with no console errors. Then
 kill "$(cat .git/http-server.pid)"
 ```
 
-- [ ] **Step 6: Commit (the format-only diff gets its own commit)**
+- [x] **Step 6: Commit (the format-only diff gets its own commit)**
 
 ```bash
 git add js/theme/loader.js package.json docs/dependency_remediation_implementation_plan.md
@@ -235,7 +235,7 @@ so the behavior change is reviewed on its own.
   runs; the fake document in the test provides exactly those.
 - Produces: `npm test`, used by Task 3.
 
-- [ ] **Step 1: Add the test script**
+- [x] **Step 1: Add the test script**
 
 In `package.json` `scripts`, add:
 
@@ -248,7 +248,7 @@ Bare `node --test` uses Node's default test-file discovery, which matches `*.tes
 ([v20 docs](https://nodejs.org/docs/latest-v20.x/api/test.html#running-tests-from-the-command-line)).
 It takes no argument, so it avoids the glob form, which the v20 docs don't describe.
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 Create `tests/theme_loader.test.js`:
 
@@ -301,13 +301,13 @@ test("theme loader keeps the CSS network error as cause", async () => {
 });
 ```
 
-- [ ] **Step 3: Run tests to verify they fail**
+- [x] **Step 3: Run tests to verify they fail**
 
 Run: `npm test`
 Expected: non-zero exit. Every test in `tests/theme_loader.test.js` fails on its `error.cause`
 assertion (the message assertions pass, which pins the current message text).
 
-- [ ] **Step 4: Attach `cause` at both throw sites**
+- [x] **Step 4: Attach `cause` at both throw sites**
 
 Use the native `Error` options bag. (`WordListError` in `js/io/wordlist.js` stores a `cause` in
 its own `details` object, a different mechanism; don't copy it.) In `fetchThemeMetadata`:
@@ -333,7 +333,7 @@ In `fetchCss`:
 Leave the bare `catch {` blocks (invalid JSON, unreadable CSS) unchanged: they bind no error, so
 `preserve-caught-error` doesn't apply.
 
-- [ ] **Step 5: Run the gate**
+- [x] **Step 5: Run the gate**
 
 ```bash
 npm test && npm run lint && npm run format:check
@@ -342,7 +342,7 @@ npm test && npm run lint && npm run format:check
 Expected: all exit 0. If `format:check` flags the test file, run `npx prettier --write tests` and
 re-run.
 
-- [ ] **Step 6: Add tests to the pre-commit script**
+- [x] **Step 6: Add tests to the pre-commit script**
 
 `before_commmit.sh` becomes:
 
@@ -354,7 +354,7 @@ npm run lint && npm run format:check && npm test
 
 Run: `./before_commmit.sh` → exit 0.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add tests/theme_loader.test.js js/theme/loader.js package.json before_commmit.sh
@@ -384,7 +384,7 @@ Deliverable: every package at its [Target versions](#target-versions) entry; `np
 **Interfaces:** consumes `npm test` from Task 2. `eslint.config.js` is expected to need no change;
 Step 5's lint run is the check.
 
-- [ ] **Step 1: Install the targets**
+- [x] **Step 1: Install the targets**
 
 ```bash
 npm install -D eslint@^10.12.0 @eslint/js@^10.0.1 globals@^17.13.0 prettier@^3.9.10
@@ -394,7 +394,7 @@ npm ls --depth=0
 Expected: no `ERESOLVE`; the `npm ls` tree matches [Target versions](#target-versions). An
 `ERESOLVE` naming `eslint-plugin-import` means Task 1 Step 3 was skipped.
 
-- [ ] **Step 2: Record the Node floor**
+- [x] **Step 2: Record the Node floor**
 
 Add an `engines` object to `package.json` (top level, after `"type"`) whose `node` value is the
 exact output of:
@@ -403,7 +403,7 @@ exact output of:
 npm view eslint@10.12.0 engines.node
 ```
 
-- [ ] **Step 3: Clear the audit**
+- [x] **Step 3: Clear the audit**
 
 ```bash
 npm audit fix
@@ -413,7 +413,7 @@ npm audit
 Expected: `npm audit` exits 0. Never use `npm audit fix --force`; if anything remains, stop and
 report the `npm audit` output.
 
-- [ ] **Step 4: Check Prettier 3.9 against the tree**
+- [x] **Step 4: Check Prettier 3.9 against the tree**
 
 ```bash
 npx prettier --write .
@@ -423,7 +423,7 @@ git status --short
 Expected: only `package.json` is modified. Any other file means Prettier 3.9 formats differently
 from 3.6.2 there; review and include that diff in this task's commit.
 
-- [ ] **Step 5: Run the gate**
+- [x] **Step 5: Run the gate**
 
 ```bash
 ./before_commmit.sh
@@ -432,7 +432,7 @@ from 3.6.2 there; review and include that diff in this task's commit.
 Expected: exit 0. A lint error from a rule new in ESLint 10's `recommended` set means a site Task 2
 didn't cover; stop and report it.
 
-- [ ] **Step 6: Changelog**
+- [x] **Step 6: Changelog**
 
 Add above the `## [1.0.0]` heading in `CHANGELOG.md`:
 
@@ -458,11 +458,11 @@ Add above the `## [1.0.0]` heading in `CHANGELOG.md`:
 
 Run `npm run format:check` → exit 0.
 
-- [ ] **Step 7: Browser smoke**
+- [x] **Step 7: Browser smoke**
 
 Repeat Task 1 Step 5.
 
-- [ ] **Step 8: Track the lockfile (D1)**
+- [x] **Step 8: Track the lockfile (D1)**
 
 In `.gitignore`, delete the `package-lock.json` entry and the comment line directly above it about
 adding it back. Then:
@@ -473,7 +473,7 @@ git check-ignore package-lock.json || echo "not ignored"
 
 Expected: `not ignored`.
 
-- [ ] **Step 9: Clean-install check**
+- [x] **Step 9: Clean-install check**
 
 Copies tracked and untracked-but-not-ignored files (so the working-tree lockfile is included) into
 a fresh directory and installs from it:
@@ -485,7 +485,7 @@ S=$(mktemp -d) && git ls-files -co --exclude-standard | tar -cf - -T - | tar -xf
 
 Expected: every command exits 0.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add package.json CHANGELOG.md .gitignore package-lock.json
