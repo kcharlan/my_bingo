@@ -146,7 +146,9 @@ export async function fetchThemeMetadata(fetchImpl, url, themeId) {
   try {
     response = await fetchImpl(url, { cache: "no-store" });
   } catch (error) {
-    throw new Error(`Theme "${themeId}" metadata request failed: ${error?.message ?? error}`);
+    throw new Error(`Theme "${themeId}" metadata request failed: ${error?.message ?? error}`, {
+      cause: error,
+    });
   }
 
   if (!response || !response.ok) {
@@ -167,7 +169,9 @@ async function fetchCss(fetchImpl, url, themeId) {
   try {
     response = await fetchImpl(url, { cache: "no-store" });
   } catch (error) {
-    throw new Error(`Theme "${themeId}" CSS request failed: ${error?.message ?? error}`);
+    throw new Error(`Theme "${themeId}" CSS request failed: ${error?.message ?? error}`, {
+      cause: error,
+    });
   }
 
   if (!response || !response.ok) {
