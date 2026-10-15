@@ -72,9 +72,7 @@ const DEFAULT_THEME_OPTION = Object.freeze({
       ? defaultTheme.name
       : defaultTheme.id,
 });
-const BUILT_IN_THEME_ENTRIES = Object.freeze([
-  { id: "high_contrast", label: "High Contrast" },
-]);
+const BUILT_IN_THEME_ENTRIES = Object.freeze([{ id: "high_contrast", label: "High Contrast" }]);
 const THEME_CATALOG_REFRESH_INTERVAL_MS = 15000;
 
 let discoveredThemeEntries = [];
@@ -340,7 +338,9 @@ function sanitizeCatalogEntries(entries) {
     sanitized.push({
       id: entry.id,
       label:
-        typeof entry.label === "string" && entry.label.trim().length > 0 ? entry.label.trim() : entry.id,
+        typeof entry.label === "string" && entry.label.trim().length > 0
+          ? entry.label.trim()
+          : entry.id,
       version: typeof entry.version === "string" ? entry.version : "",
       description:
         typeof entry.description === "string" && entry.description.trim().length > 0

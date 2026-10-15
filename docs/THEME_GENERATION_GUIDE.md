@@ -17,8 +17,8 @@ A valid theme must have the following structure:
     └───theme.css
 ```
 
--   **`my-awesome-theme/`**: The theme's root directory. The name of this directory is the theme's `id`.
-    -   **`id` requirements**: The theme `id` must consist only of lowercase letters, numbers, hyphens (`-`), and underscores (`_`).
+- **`my-awesome-theme/`**: The theme's root directory. The name of this directory is the theme's `id`.
+  - **`id` requirements**: The theme `id` must consist only of lowercase letters, numbers, hyphens (`-`), and underscores (`_`).
 
 ### `theme.json`
 
@@ -26,14 +26,14 @@ This file contains the theme's metadata.
 
 **Fields:**
 
-| Field         | Type   | Required | Description                                                                                                                            |
-| :------------ | :----- | :------- | :------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`        | String | Yes      | The human-readable name of the theme, displayed in the UI.                                                                             |
-| `version`     | String | Yes      | The theme's version number (e.g., `"1.0.0"`).                                                                                          |
+| Field         | Type   | Required | Description                                                                                                                               |
+| :------------ | :----- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`        | String | Yes      | The human-readable name of the theme, displayed in the UI.                                                                                |
+| `version`     | String | Yes      | The theme's version number (e.g., `"1.0.0"`).                                                                                             |
 | `css`         | String | Yes      | The relative path to the theme's CSS file. This must be a simple relative path (e.g., `"theme.css"`) without directory traversal (`../`). |
-| `description` | String | No       | A brief description of the theme.                                                                                                      |
-| `colors`      | Object | No       | An object defining the theme's color palette. This is for informational purposes and is not directly used by the application's runtime.  |
-| `font_family` | String | No       | The primary font family for the theme. This is for informational purposes and is not directly used by the application's runtime.         |
+| `description` | String | No       | A brief description of the theme.                                                                                                         |
+| `colors`      | Object | No       | An object defining the theme's color palette. This is for informational purposes and is not directly used by the application's runtime.   |
+| `font_family` | String | No       | The primary font family for the theme. This is for informational purposes and is not directly used by the application's runtime.          |
 
 **Example `theme.json`:**
 
@@ -71,9 +71,9 @@ This file contains all the CSS rules for the theme.
 3.  **Comprehensive Styling**: A theme should provide styles for all major UI components and their states. See Appendix A for a complete list of selectors that should be styled as of October 25, 2025.
 
 4.  **Security**: The CSS file must not contain any of the following:
-    -   `<script>` tags
-    -   `@import` rules that point to external URLs.
-    -   `url()` references that point to external URLs or use `javascript:`. All `url()` references must be relative paths to resources within the theme's directory.
+    - `<script>` tags
+    - `@import` rules that point to external URLs.
+    - `url()` references that point to external URLs or use `javascript:`. All `url()` references must be relative paths to resources within the theme's directory.
 
 **Example `theme.css`:**
 

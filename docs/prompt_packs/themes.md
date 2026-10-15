@@ -10,12 +10,14 @@ You don’t need to hand-edit paths or selectors if you use this correctly.
 
 Each theme is generated using the **Strict Bingo Theme Generator Prompt** (below, fully inlined).  
 This ensures:
+
 - The JSON and CSS files match exactly in `theme-id`.
 - The CSS includes proper `:root[data-theme="..."]` scoping for runtime theme swapping.
 - Color contrast and structure meet accessibility (WCAG AA) requirements.
 - Output is valid JSON and CSS, with no filenames or stray text.
 
 Your result should always be **exactly two code blocks**:
+
 1. JSON (the `/themes/<theme-id>/theme.json` content)
 2. CSS (the `/themes/<theme-id>/theme.css` content)
 
@@ -38,7 +40,7 @@ Create a cohesive, accessible color theme and output exactly TWO code blocks in 
 2) A `css` code block for /themes/<theme-id>/theme.css
 
 CRITICAL OUTPUT RULES (no exceptions):
-- Output ONLY two fenced code blocks. No filenames, no headings, no commentary, no blank lines before/after. 
+- Output ONLY two fenced code blocks. No filenames, no headings, no commentary, no blank lines before/after.
 - Code fence languages MUST be `json` and `css` (in that order).
 - Do NOT include paths or filenames inside the code blocks. Only the file contents.
 - The theme id is case-sensitive and must match in JSON and in EVERY CSS selector scope: :root[data-theme="<theme-id>"].
@@ -251,6 +253,7 @@ Run it; copy the two returned code blocks into `/themes/christmas/`.
 Use the same strict generator with these predefined directions:
 
 ### **Office Neutral**
+
 ```
 ThemeName: "Office Neutral"
 theme-id: office-neutral
@@ -258,6 +261,7 @@ Mood cue: "Professional grayscale with navy and steel blue highlights; minimalis
 ```
 
 ### **Office Dark**
+
 ```
 ThemeName: "Office Dark"
 theme-id: office-dark
@@ -265,6 +269,7 @@ Mood cue: "Muted charcoal with faint blue highlights; good for long sessions and
 ```
 
 ### **Office High Contrast**
+
 ```
 ThemeName: "Office High Contrast"
 theme-id: office-highcontrast
@@ -278,6 +283,7 @@ Mood cue: "Bright white background, crisp black text, and strong blue accents fo
 Add more by copying the same generator structure and adjusting these sample lines:
 
 ### **Dark Harvest**
+
 ```
 ThemeName: "Dark Harvest"
 theme-id: darkharvest
@@ -285,6 +291,7 @@ Mood cue: "Deep soil tones with burnt orange and crimson; a gothic fall aestheti
 ```
 
 ### **New Year**
+
 ```
 ThemeName: "New Year"
 theme-id: newyear
@@ -292,6 +299,7 @@ Mood cue: "Midnight blues, silver gradients, and champagne gold text highlights;
 ```
 
 ### **Spring Garden**
+
 ```
 ThemeName: "Spring Garden"
 theme-id: springgarden

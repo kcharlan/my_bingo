@@ -199,10 +199,7 @@ function deriveChildNameFromHref(rawHref, basePath) {
   // Compute absolute base path for strict filtering of absolute links
   const absBase = toAbsoluteBasePath(basePath);
   const absBaseWithSlash = ensureTrailingSlash(absBase);
-  const baseDirName = absBaseWithSlash
-    .split("/")
-    .filter(Boolean)
-    .slice(-1)[0] || "";
+  const baseDirName = absBaseWithSlash.split("/").filter(Boolean).slice(-1)[0] || "";
 
   // Absolute path: must be immediate child of absBase
   if (href.startsWith("/")) {

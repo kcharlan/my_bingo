@@ -4,16 +4,16 @@ These prompt packs let you (or a CLI model) generate **themes** and **word lists
 
 Each section in `themes.md` and `word_lists.md` is a complete, drop-in prompt:
 
-1) Paste the **Manual Prompt** into any LLM (ChatGPT, Gemini, Claude, etc.).  
-2) Immediately paste the **CLI Prompt** after it (unchanged).  
+1. Paste the **Manual Prompt** into any LLM (ChatGPT, Gemini, Claude, etc.).
+2. Immediately paste the **CLI Prompt** after it (unchanged).  
    The CLI prompt tells a coding-capable LLM to write files locally and validate them.
 
 ## Folder Structure
 
 /docs/prompt_packs/
-  _README.md
-  themes.md
-  word_lists.md
+\_README.md
+themes.md
+word_lists.md
 
 - `themes.md` → creates `/themes/<theme_name>/theme.json` and `/themes/<theme_name>/theme.css`
 - `word_lists.md` → creates `/lists/<theme_name>.txt`
@@ -31,17 +31,17 @@ Each section in `themes.md` and `word_lists.md` is a complete, drop-in prompt:
 A valid `theme.json` **must** match this structure:
 
 {
-  "name": "<string, theme display name>",
-  "version": "1.0.0",
-  "css": "theme.css",                     // relative file name only
-  "colors": {
-    "background": "#RRGGBB",
-    "text":       "#RRGGBB",
-    "primary":    "#RRGGBB",
-    "accent":     "#RRGGBB"
-  },
-  "font_family": "system-ui, Arial, sans-serif",
-  "notes": "<optional short text>"
+"name": "<string, theme display name>",
+"version": "1.0.0",
+"css": "theme.css", // relative file name only
+"colors": {
+"background": "#RRGGBB",
+"text": "#RRGGBB",
+"primary": "#RRGGBB",
+"accent": "#RRGGBB"
+},
+"font_family": "system-ui, Arial, sans-serif",
+"notes": "<optional short text>"
 }
 
 Rules:
