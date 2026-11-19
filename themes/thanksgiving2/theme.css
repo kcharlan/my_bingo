@@ -84,7 +84,7 @@
   border: 2px solid #d86e24;
 }
 :root[data-theme="thanksgiving2"] .board__cell[data-state="marked"]::before {
-  color: #d86e24;
+  color: #ffd18a;
 }
 :root[data-theme="thanksgiving2"] .board__cell[data-free="true"][data-state="marked"]::before {
   color: #ffe0a3;
