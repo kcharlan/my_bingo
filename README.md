@@ -105,6 +105,20 @@ Once present, the manifest is used for discovery and you can still add/remove th
 
 For a focused, step‑by‑step guide, see `docs/Themes_quick_reference.md`.
 
+## Local deployment
+
+The Utilities Toolkit's My Bingo installer deploys the updated `main` checkout to
+`~/webroot/games/my_bingo/`. Run it from a sibling `utilities-public` checkout:
+
+```bash
+node tools/deploy_my_bingo.mjs --dry-run
+node tools/deploy_my_bingo.mjs
+node tools/deploy_my_bingo.mjs --check
+```
+
+Play at [localhost:7711/games/my_bingo/bingo_app.html](http://localhost:7711/games/my_bingo/bingo_app.html).
+See the Utilities Toolkit's `docs/local_deployment_sync.md` for checkout migration and rollback.
+
 ## Contributing
 
 Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for details.
