@@ -84,7 +84,13 @@
   border: 2px solid #c65a1e;
 }
 :root[data-theme="thanksgiving"] .board__cell[data-state="marked"]::before {
-  color: #c65a1e;
+  color: #572609;
+}
+:root[data-theme="thanksgiving"] .board__cell[data-free="true"][data-state="marked"]::before {
+  color: #1a0b04;
+}
+:root[data-theme="thanksgiving"] .board__cell[data-free="true"][data-state="marked"]::after {
+  background: rgba(198, 90, 30, 0.08);
 }
 
 /* Focus ring on actual interactive elements */

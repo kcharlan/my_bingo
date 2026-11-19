@@ -4,9 +4,12 @@
 
 ### Changed
 
-- Dev toolchain upgraded to ESLint 10, `@eslint/js` 10, `globals` 17 and Prettier 3.9; see
-  `engines` in `package.json` for the minimum Node version.
+- Dev toolchain upgraded; see `package.json` for versions and the minimum Node version.
 - Theme loader keeps the underlying network error as `cause` when a theme fails to load.
+
+### Security
+
+- Updated ESLint to remediate the [minimatch advisory](https://github.com/advisories/GHSA-g3hv-75wg-m249).
 
 ### Removed
 

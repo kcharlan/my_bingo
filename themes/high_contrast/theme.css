@@ -86,6 +86,9 @@
 :root[data-theme="high_contrast"] .board__cell[data-state="marked"]::before {
   color: #ffde03;
 }
+:root[data-theme="high_contrast"] .board__cell[data-free="true"][data-state="marked"]::before {
+  color: #19134a;
+}
 
 :root[data-theme="high_contrast"] .board__cell:focus-visible,
 :root[data-theme="high_contrast"] .toolbar__button:focus-visible,
